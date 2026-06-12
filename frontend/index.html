@@ -1028,7 +1028,8 @@
       'Inglaterra':'gb-eng', 'ENG':'gb-eng',
       'Ecuador':'ec', 'ECU':'ec',
       'Bosnia':'ba', 'BIH':'ba',
-      'R. Congo':'cd', 'COD':'cd',
+      'Bosnia-Herzegovina':'ba', 'Bosnia y Herzegovina':'ba', 'Bosnia and Herzegovina':'ba', 'Bosnia Herzegovina':'ba', 'Bosnia & Herzegovina':'ba',
+      'R. Congo':'cd', 'COD':'cd', 'Rep. Congo':'cd', 'RD Congo':'cd',
       'España':'es', 'ESP':'es',
       'Austria':'at', 'AUT':'at',
       'Australia':'au', 'AUS':'au',
@@ -1037,7 +1038,7 @@
       'Suiza':'ch', 'SUI':'ch',
       'Egipto':'eg', 'EGY':'eg',
       'Uzbekistán':'uz', 'Uzbekistan':'uz', 'UZB':'uz',
-      'Países Bajos':'nl', 'Paises Bajos':'nl', 'NED':'nl',
+      'Países Bajos':'nl', 'Paises Bajos':'nl', 'NED':'nl', 'Netherlands':'nl', 'Holanda':'nl',
       'Colombia':'co', 'COL':'co',
       'Ghana':'gh', 'GHA':'gh',
       'Irak':'iq', 'IRQ':'iq',
@@ -1057,7 +1058,7 @@
       'Nueva Zelanda':'nz', 'NZL':'nz',
       'Haití':'ht', 'Haiti':'ht', 'HAI':'ht',
       'Croacia':'hr', 'CRO':'hr',
-      'Costa de Marfil':'ci', 'CIV':'ci',
+      'Costa de Marfil':'ci', 'CIV':'ci', "Côte d'Ivoire":'ci', 'Ivory Coast':'ci',
       'Paraguay':'py', 'PAR':'py',
       'Irán':'ir', 'Iran':'ir', 'IRN':'ir'
     };
@@ -1376,7 +1377,7 @@
         return;
       }
       const isMobileView = document.body.classList.contains('mobile-version');
-      list.innerHTML = results.map(result => {
+      list.innerHTML = results.slice().reverse().map(result => {
         const flagA = getFlagUrl(result.team_a);
         const flagB = getFlagUrl(result.team_b);
         const flagAImg = flagA

@@ -70,10 +70,12 @@ async def fetch_from_google_sheet(sheet_csv_url: str) -> List[Dict]:
         # expect columns: match,team_a,team_b,score_a,score_b[,status,group]
         try:
             raw_status = (row.get('status') or row.get('Status') or row.get('Estado') or '').strip().upper()
+            raw_a = (row.get('team_a') or row.get('Team A') or row.get('Equipo A') or '').strip()
+            raw_b = (row.get('team_b') or row.get('Team B') or row.get('Equipo B') or '').strip()
             entry = {
                 'match': row.get('match') or row.get('Match') or row.get('Partido') or '',
-                'team_a': row.get('team_a') or row.get('Team A') or row.get('Equipo A') or '',
-                'team_b': row.get('team_b') or row.get('Team B') or row.get('Equipo B') or '',
+                'team_a': _translate_team(raw_a),
+                'team_b': _translate_team(raw_b),
                 'score_a': int(row.get('score_a') or row.get('Score A') or row.get('Goles A') or 0),
                 'score_b': int(row.get('score_b') or row.get('Score B') or row.get('Goles B') or 0),
                 'status': raw_status if raw_status else 'FT',
@@ -107,9 +109,16 @@ _EN_TO_ES: Dict[str, str] = {
     'Ecuador': 'Ecuador',
     'Bosnia and Herzegovina': 'Bosnia',
     'Bosnia & Herzegovina': 'Bosnia',
+    'Bosnia-Herzegovina': 'Bosnia',
+    'Bosnia y Herzegovina': 'Bosnia',
+    'Bosnia Herzegovina': 'Bosnia',
     'DR Congo': 'R. Congo',
     'Congo DR': 'R. Congo',
     'Democratic Republic of Congo': 'R. Congo',
+    'Rep. Congo': 'R. Congo',
+    'RD Congo': 'R. Congo',
+    'República del Congo': 'R. Congo',
+    'RD del Congo': 'R. Congo',
     'Spain': 'España',
     'Austria': 'Austria',
     'Australia': 'Australia',
