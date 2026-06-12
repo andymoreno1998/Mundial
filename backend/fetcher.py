@@ -44,10 +44,16 @@ def merge_results(new: List[Dict]):
         key = (_norm_key(r.get('team_a', '')), _norm_key(r.get('team_b', '')))
         if key in existing_map:
             idx = existing_map[key]
+            changed = False
             new_status = r.get('status')
-            # update status when match transitions (e.g. live → FT)
             if new_status and existing[idx].get('status') != new_status:
                 existing[idx]['status'] = new_status
+                changed = True
+            for score_key in ('score_a', 'score_b'):
+                if r.get(score_key) is not None and existing[idx].get(score_key) != r[score_key]:
+                    existing[idx][score_key] = r[score_key]
+                    changed = True
+            if changed:
                 added += 1
         else:
             r['id'] = len(existing) + 1
