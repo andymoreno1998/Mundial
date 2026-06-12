@@ -1,0 +1,452 @@
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+import uvicorn
+from pathlib import Path
+import json
+from typing import List, Dict
+import math
+import asyncio
+import json as _json
+import re
+import unicodedata
+from . import fetcher
+
+BASE = Path(__file__).resolve().parents[1]
+
+TEAM_CODE_MAP = {
+    'brasil': 'BRA',
+    'estadosunidos': 'USA',
+    'coreadelsur': 'KOR',
+    'curazao': 'CUW',
+    'alemania': 'GER',
+    'turquía': 'TUR',
+    'turquia': 'TUR',
+    'escocia': 'SCO',
+    'jordania': 'JOR',
+    'uruguay': 'URU',
+    'marruecos': 'MAR',
+    'túnez': 'TUN',
+    'tunez': 'TUN',
+    'caboverde': 'CPV',
+    'inglaterra': 'ENG',
+    'ecuador': 'ECU',
+    'bosnia': 'BIH',
+    'rcongo': 'COD',
+    'espana': 'ESP',
+    'españa': 'ESP',
+    'austria': 'AUT',
+    'australia': 'AUS',
+    'qatar': 'QAT',
+    'bélgica': 'BEL',
+    'belgica': 'BEL',
+    'suiza': 'SUI',
+    'egipto': 'EGY',
+    'uzbekistán': 'UZB',
+    'uzbekistan': 'UZB',
+    'paísesbajos': 'NED',
+    'paisesbajos': 'NED',
+    'colombia': 'COL',
+    'ghana': 'GHA',
+    'irak': 'IRQ',
+    'francia': 'FRA',
+    'méxico': 'MEX',
+    'mexico': 'MEX',
+    'suecia': 'SWE',
+    'arabiasaudita': 'KSA',
+    'portugal': 'POR',
+    'senegal': 'SEN',
+    'chequia': 'CZE',
+    'panamá': 'PAN',
+    'panama': 'PAN',
+    'noruega': 'NOR',
+    'canadá': 'CAN',
+    'canada': 'CAN',
+    'sudáfrica': 'RSA',
+    'sudafrica': 'RSA',
+    'argelia': 'DZA',
+    'argentina': 'ARG',
+    'japón': 'JPN',
+    'japon': 'JPN',
+    'nuevazelanda': 'NZL',
+    'haití': 'HAI',
+    'haiti': 'HAI',
+    'croacia': 'CRO',
+    'costademarfil': 'CIV',
+    'paraguay': 'PAR',
+    'irán': 'IRN',
+    'iran': 'IRN',
+}
+
+
+def normalize_team_name(name: str) -> str:
+    clean = unicodedata.normalize('NFKD', name or '')
+    clean = ''.join(ch for ch in clean if not unicodedata.combining(ch))
+    clean = re.sub(r'[^a-z0-9]', '', clean.casefold())
+    return clean
+
+
+def canonical_team_id(name: str) -> str:
+    norm = normalize_team_name(name)
+    if norm in TEAM_CODE_MAP:
+        return TEAM_CODE_MAP[norm]
+    if len(name or '') == 3 and (name or '').isalpha():
+        return (name or '').upper()
+    return norm
+DATA_DIR = BASE / 'data'
+PICKS_FILE = DATA_DIR / 'picks.json'
+RESULTS_FILE = DATA_DIR / 'results.json'
+ELIMINATED_FILE = DATA_DIR / 'eliminated.json'
+FRONTEND_DIR = BASE / 'frontend'
+
+app = FastAPI(title='Quiniela Mundial 2026 API')
+app.mount('/static', StaticFiles(directory=FRONTEND_DIR), name='static')
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+class ResultIn(BaseModel):
+    match: str
+    team_a: str
+    team_b: str
+    score_a: int
+    score_b: int
+
+
+def load_picks():
+    with open(PICKS_FILE, encoding='utf-8') as f:
+        return json.load(f)
+
+
+def load_results():
+    if not RESULTS_FILE.exists():
+        return []
+    with open(RESULTS_FILE, encoding='utf-8') as f:
+        return json.load(f)
+
+
+def load_eliminated():
+    if not ELIMINATED_FILE.exists():
+        return []
+    with open(ELIMINATED_FILE, encoding='utf-8') as f:
+        try:
+            return json.load(f)
+        except Exception:
+            return []
+
+
+def save_eliminated(items):
+    with open(ELIMINATED_FILE, 'w', encoding='utf-8') as f:
+        json.dump(items, f, ensure_ascii=False, indent=2)
+
+
+def save_results(results):
+    with open(RESULTS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(results, f, ensure_ascii=False, indent=2)
+
+
+def update_eliminated_if_round32(results: List[Dict]):
+    """If Round of 32 participants are present in results, mark all teams
+    that are NOT in the Round of 32 as eliminated and persist to file.
+    Returns the new eliminated list when updated, otherwise None."""
+    all_teams = set()
+    r32_teams = set()
+    for r in results:
+        ta = r.get('team_a')
+        tb = r.get('team_b')
+        if ta:
+            all_teams.add(ta)
+        if tb:
+            all_teams.add(tb)
+        # try to detect stage/round labels that indicate Round of 32
+        stage = ''
+        for k in ('stage', 'round', 'match'):
+            if r.get(k):
+                stage = str(r.get(k)).lower()
+                break
+        if '32' in stage or 'round of 32' in stage or 'r32' in stage:
+            if ta:
+                r32_teams.add(ta)
+            if tb:
+                r32_teams.add(tb)
+
+    # If we have at least 32 distinct teams in Round of 32, consider the phase reached
+    if len(r32_teams) >= 32:
+        eliminated = sorted(list(all_teams - r32_teams))
+        save_eliminated(eliminated)
+        return eliminated
+    return None
+
+
+_FINISHED_STATUSES = {'FT', 'FINISHED', 'FINAL', 'COMPLETED', 'FT_PEN', 'AET'}
+
+
+def is_finished_match(r: Dict) -> bool:
+    """Return True only for officially finished matches.
+    Results without a status field are treated as finished (backward compat)."""
+    status = r.get('status')
+    if status is None:
+        return True
+    return str(status).upper() in _FINISHED_STATUSES
+
+
+def compute_team_points(results: List[Dict]) -> Dict[str, int]:
+    points = {}
+    for r in results:
+        if not is_finished_match(r):
+            continue
+        a = canonical_team_id(r['team_a'])
+        b = canonical_team_id(r['team_b'])
+        sa = r['score_a']
+        sb = r['score_b']
+        if sa > sb:
+            pts_a, pts_b = 3, 0
+        elif sa < sb:
+            pts_a, pts_b = 0, 3
+        else:
+            pts_a, pts_b = 1, 1
+        points[a] = points.get(a, 0) + pts_a
+        points[b] = points.get(b, 0) + pts_b
+    return points
+
+
+def compute_standings(picks, results):
+    team_points = compute_team_points(results)
+    standings = []
+    for p in picks:
+        score = 0
+        for t in p.get('teams', []):
+            score += team_points.get(canonical_team_id(t), 0)
+        standings.append({'name': p.get('name'), 'score': score})
+    # compute probabilities with softmax on scores
+    exps = [math.exp(s['score']) for s in standings]
+    s = sum(exps) if sum(exps) > 0 else 1
+    for i, st in enumerate(standings):
+        st['probability'] = round(100 * exps[i] / s, 2)
+    standings.sort(key=lambda x: x['score'], reverse=True)
+    return standings
+
+
+def compute_group_standings(results: List[Dict]):
+    groups = {}
+    live_by_group: Dict[str, int] = {}
+    for r in results:
+        group_name = r.get('group')
+        if not group_name:
+            continue
+        sa = r.get('score_a')
+        sb = r.get('score_b')
+        if sa is None or sb is None:
+            continue
+        ta = r['team_a']
+        tb = r['team_b']
+        groups.setdefault(group_name, {})
+        group = groups[group_name]
+        for team in (ta, tb):
+            if team not in group:
+                group[team] = {'team': team, 'points': 0, 'gf': 0, 'ga': 0, 'gd': 0, 'played': 0}
+        if not is_finished_match(r):
+            # track in-progress matches per group but don't add points
+            live_by_group[group_name] = live_by_group.get(group_name, 0) + 1
+            continue
+        group[ta]['played'] += 1
+        group[tb]['played'] += 1
+        group[ta]['gf'] += sa
+        group[ta]['ga'] += sb
+        group[tb]['gf'] += sb
+        group[tb]['ga'] += sa
+        group[ta]['gd'] = group[ta]['gf'] - group[ta]['ga']
+        group[tb]['gd'] = group[tb]['gf'] - group[tb]['ga']
+        if sa > sb:
+            group[ta]['points'] += 3
+        elif sa < sb:
+            group[tb]['points'] += 3
+        else:
+            group[ta]['points'] += 1
+            group[tb]['points'] += 1
+
+    result = []
+    for group_name, teams in groups.items():
+        standings = sorted(
+            teams.values(),
+            key=lambda x: (-x['points'], -x['gd'], -x['gf'], x['team'])
+        )
+        entry = {'group': group_name, 'standings': standings}
+        if live_by_group.get(group_name):
+            entry['live_matches'] = live_by_group[group_name]
+        result.append(entry)
+    result.sort(key=lambda x: x['group'])
+    return result
+
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: dict):
+        to_remove = []
+        for connection in self.active_connections:
+            try:
+                await connection.send_json(message)
+            except Exception:
+                to_remove.append(connection)
+        for c in to_remove:
+            self.disconnect(c)
+
+
+manager = ConnectionManager()
+
+
+@app.get('/api/picks')
+def api_picks():
+    return load_picks()
+
+
+@app.get('/api/results')
+def api_results():
+    return load_results()
+
+
+@app.get('/api/eliminated')
+def api_eliminated():
+    return load_eliminated()
+
+
+@app.post('/api/eliminated')
+def post_eliminated(payload: Dict):
+    """POST body can be {"teams": [..]} to replace the list,
+    or {"team": "Name"} to toggle a single team in the eliminated list."""
+    current = set(load_eliminated())
+    teams = payload.get('teams') if isinstance(payload, dict) else None
+    team = payload.get('team') if isinstance(payload, dict) else None
+    if teams is not None:
+        # replace list
+        out = list(dict.fromkeys([t for t in teams if t]))
+        save_eliminated(out)
+        return {'ok': True, 'eliminated': out}
+    if team is not None:
+        if team in current:
+            current.remove(team)
+        else:
+            current.add(team)
+        out = list(sorted(current))
+        save_eliminated(out)
+        return {'ok': True, 'eliminated': out}
+    raise HTTPException(status_code=400, detail='expected {teams:[..]} or {team:"name"}')
+
+
+@app.get('/api/standings')
+def api_standings():
+    picks = load_picks()
+    results = load_results()
+    return compute_standings(picks, results)
+
+
+@app.get('/api/groups')
+def api_groups():
+    results = load_results()
+    return compute_group_standings(results)
+
+
+@app.post('/api/result')
+async def post_result(r: ResultIn):
+    results = load_results()
+    entry = r.dict()
+    entry['id'] = len(results) + 1
+    results.append(entry)
+    save_results(results)
+    # broadcast updated standings
+    picks = load_picks()
+    standings = compute_standings(picks, results)
+    groups = compute_group_standings(results)
+    # compute automatic eliminated teams if Round of 32 is present
+    updated = update_eliminated_if_round32(results)
+    import asyncio
+    asyncio.create_task(manager.broadcast({'type': 'update', 'results': results, 'standings': standings, 'groups': groups, 'eliminatedTeams': load_eliminated()}))
+    return {'ok': True, 'result': entry}
+
+
+@app.websocket('/ws')
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        # on connect, send current state
+        picks = load_picks()
+        results = load_results()
+        standings = compute_standings(picks, results)
+        await websocket.send_json({'type': 'init', 'results': results, 'standings': standings, 'groups': compute_group_standings(results), 'picks_count': len(picks), 'eliminatedTeams': load_eliminated()})
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+
+
+@app.get('/', response_class=FileResponse)
+def root():
+    return FRONTEND_DIR / 'index.html'
+
+@app.on_event('startup')
+async def start_background_fetcher():
+    import os
+    cfg_path = BASE / 'backend' / 'config.json'
+    try:
+        with open(cfg_path, encoding='utf-8') as f:
+            cfg = _json.load(f)
+    except Exception:
+        cfg = {}
+    # env variables override config.json (used in production/Railway)
+    if os.environ.get('FOOTBALL_API_KEY'):
+        cfg['api_key'] = os.environ['FOOTBALL_API_KEY']
+    if os.environ.get('FOOTBALL_API_URL'):
+        cfg['api_url'] = os.environ['FOOTBALL_API_URL']
+    if os.environ.get('FOOTBALL_API_MODE'):
+        cfg['mode'] = os.environ['FOOTBALL_API_MODE']
+    # if no config at all, default to football-data.org
+    if not cfg.get('mode'):
+        cfg['mode'] = 'api'
+    if not cfg.get('api_url'):
+        cfg['api_url'] = 'https://api.football-data.org/v4/competitions/WC/matches'
+
+    interval = int(cfg.get('interval_seconds', 120))
+
+    async def looper():
+        while True:
+            try:
+                added = await fetcher.fetch_and_update(cfg)
+                if added:
+                    # broadcast new state
+                    picks = load_picks()
+                    results = load_results()
+                    standings = compute_standings(picks, results)
+                    # update automatic eliminations if Round of 32 is defined
+                    try:
+                        update_eliminated_if_round32(results)
+                    except Exception:
+                        pass
+                    await manager.broadcast({'type': 'update', 'results': results, 'standings': standings, 'groups': compute_group_standings(results), 'eliminatedTeams': load_eliminated()})
+            except Exception:
+                pass
+            await asyncio.sleep(interval)
+
+    asyncio.create_task(looper())
+
+
+if __name__ == '__main__':
+    import os
+    port = int(os.environ.get('PORT', 8000))
+    uvicorn.run('backend.main:app', host='0.0.0.0', port=port, reload=True)

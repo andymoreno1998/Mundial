@@ -1,0 +1,8 @@
+{
+  "mode": "api",
+  "api_url": "https://api.football-data.org/v4/competitions/WC/matches",
+  "api_key": "",
+  "sheet_url": "",
+  "fifa_url": "",
+  "interval_seconds": 120
+}

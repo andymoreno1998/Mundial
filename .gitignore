@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.xlsx
+# results se regenera automáticamente desde la API al arrancar
+data/results.json
+# config tiene la API key — se configura como variable de entorno en producción
+backend/config.json

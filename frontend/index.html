@@ -1,0 +1,1493 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title># Quiniela Mundial 2026-Familia Moreno</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090b12;
+      --panel: rgba(18, 24, 45, 0.95);
+      --panel-soft: rgba(24, 32, 60, 0.92);
+      --text: #f7f8fb;
+      --text-muted: #9aa3c4;
+      --border: rgba(255,255,255,0.08);
+      --accent: #4dd0e1;
+      --accent-2: #9f5cff;
+      --shadow: 0 30px 80px rgba(0,0,0,0.35);
+      --success: #6ce6b6;
+      --warning: #ffd369;
+      --danger: #ff6b6b;
+      --surface: rgba(255,255,255,0.03);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at top left, rgba(77,208,225,0.16), transparent 30%),
+                  radial-gradient(circle at bottom right, rgba(159,92,255,0.18), transparent 25%),
+                  linear-gradient(180deg, #05070e 0%, #0f1220 100%);
+      color: var(--text);
+    }
+
+    body {
+      padding: 24px;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page-shell {
+      width: 100%;
+      max-width: 1320px;
+      margin: auto;
+      display: grid;
+      gap: 16px;
+      padding: 0 14px;
+    }
+
+    body.mobile-version .page-shell {
+      width: 100%;
+      max-width: 100%;
+      padding: 0 12px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 12px;
+      padding: 14px 18px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero-top {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    body.mobile-version .hero-top {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .hero-title {
+      max-width: 720px;
+    }
+
+    .hero-title h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 2.3vw, 2.6rem);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-title p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.96rem;
+      line-height: 1.6;
+      max-width: 620px;
+    }
+
+    .hero-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .hero-stats > * {
+      flex: 1 1 130px;
+      min-width: 130px;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .hero-extra {
+      display: grid;
+      gap: 12px;
+    }
+
+    .top-team-card {
+      padding: 18px 20px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      display: grid;
+      gap: 10px;
+    }
+
+    .top-teams-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mobile-cta {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 8px;
+    }
+
+    .mobile-cta a {
+      color: var(--accent);
+      font-size: 0.92rem;
+      font-weight: 600;
+      padding: 10px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(77,208,225,0.24);
+      background: rgba(77,208,225,0.08);
+      transition: background 180ms ease, transform 180ms ease;
+    }
+
+    .mobile-cta a:hover {
+      background: rgba(77,208,225,0.14);
+      transform: translateY(-1px);
+    }
+
+    .mobile-note {
+      margin: 0 0 10px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .top-team-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .top-team-item strong {
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .top-team-badge {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .leader-card {
+      min-width: 260px;
+    }
+
+    .leader-details {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .flag-icon {
+      width: 26px;
+      height: 18px;
+      border-radius: 4px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: #fff;
+    }
+
+    .team-cell img,
+    .leader-details img {
+      display: inline-block;
+    }
+
+    .stat-card {
+      padding: 18px 20px;
+      border-radius: 22px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+      display: grid;
+      gap: 6px;
+    }
+
+    .stat-card strong {
+      display: block;
+      font-size: 1.8rem;
+      color: #fff;
+    }
+
+    .stat-card span {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .section {
+      display: grid;
+      gap: 20px;
+      padding: 28px;
+      background: var(--panel);
+      border-radius: 30px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(15px);
+    }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .section-header h2 {
+      margin: 0;
+      font-size: 1.4rem;
+      letter-spacing: -0.02em;
+    }
+
+    .section-header p {
+      margin: 0;
+      color: var(--text-muted);
+    }
+
+    .filter-wrapper {
+      display: grid;
+      gap: 12px;
+      width: min(100%, 320px);
+    }
+
+    .filter-wrapper input {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-size: 0.96rem;
+      outline: none;
+      transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .filter-wrapper input:focus {
+      border-color: rgba(77,208,225,0.9);
+      box-shadow: 0 0 0 4px rgba(77,208,225,0.12);
+      transform: translateY(-1px);
+    }
+
+    .table-shell {
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .table-shell table {
+      width: 100%;
+      min-width: 100%;
+      table-layout: auto;
+    }
+
+    .picks-cards {
+      display: none;
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    .picks-card {
+      padding: 18px 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: grid;
+      gap: 12px;
+    }
+
+    .picks-card-title {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #fff;
+    }
+
+    .picks-card-teams {
+      display: grid;
+      gap: 8px;
+    }
+
+    .picks-card-team {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mobile-version #picks {
+      display: none;
+    }
+
+    .mobile-version .picks-cards {
+      display: grid;
+    }
+
+    .mobile-version .table-shell {
+      border-radius: 20px;
+    }
+
+    .mobile-version .table-shell table {
+      min-width: 540px;
+    }
+
+    .mobile-version th,
+    .mobile-version td {
+      padding: 12px 10px;
+      font-size: 0.86rem;
+    }
+
+    .chart-card {
+      padding: 24px 24px 18px;
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .performance-chart {
+      display: grid;
+      gap: 14px;
+    }
+
+    .chart-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 90px;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: transform 160ms ease, background 160ms ease;
+    }
+
+    .chart-row:hover {
+      transform: translateY(-2px);
+      background: rgba(77,208,225,0.1);
+    }
+
+    .chart-meta {
+      display: grid;
+      gap: 4px;
+    }
+
+    .chart-meta strong {
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .chart-meta span {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .bar-track {
+      width: 100%;
+      height: 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 340ms ease;
+    }
+
+    .team-score {
+      text-align: right;
+      font-size: 0.95rem;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 100%;
+    }
+
+    thead tr {
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    th, td {
+      padding: 18px 16px;
+      text-align: left;
+      color: var(--text);
+      vertical-align: middle;
+      font-size: 0.94rem;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: rgba(9,11,18,0.95);
+      color: #b8c2ff;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    th span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    tbody tr {
+      transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    tbody tr:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.06);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.15);
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    .team-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .team-flag {
+      width: 34px;
+      height: 24px;
+      border-radius: 6px;
+      object-fit: cover;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .team-name {
+      display: grid;
+      gap: 4px;
+    }
+
+    .team-name strong {
+      font-size: 0.98rem;
+      color: #fff;
+    }
+
+    .team-name span {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .team-label {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 8px;
+      transition: background 160ms ease, transform 120ms ease;
+      cursor: pointer;
+    }
+
+    .team-label.eliminated {
+      text-decoration: line-through;
+      opacity: 0.5;
+      color: var(--text-muted);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      background: rgba(255,255,255,0.06);
+    }
+
+    .pill.success {
+      color: var(--success);
+      background: rgba(108,230,182,0.12);
+    }
+
+    .pill.warning {
+      color: var(--warning);
+      background: rgba(255,211,105,0.14);
+    }
+
+    .pill.danger {
+      color: var(--danger);
+      background: rgba(255,107,107,0.14);
+    }
+
+    .summary-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat( auto-fit, minmax(220px, 1fr) );
+    }
+
+    .card-row {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1.4fr 1fr;
+      align-items: stretch;
+    }
+
+    .results-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .participant-chart {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      align-items: end;
+      padding: 12px 0;
+    }
+
+    .participant-column {
+      display: grid;
+      align-items: flex-end;
+      justify-items: center;
+      gap: 10px;
+    }
+
+    .participant-column .bar {
+      width: 100%;
+      min-height: 40px;
+      border-radius: 14px 14px 0 0;
+      background: linear-gradient(180deg, rgba(77,208,225,0.95), rgba(159,92,255,0.88));
+      transition: height 280ms ease;
+    }
+
+    .participant-column strong {
+      color: #fff;
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    .participant-column span {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .results-list li {
+      padding: 16px 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: grid;
+      gap: 8px;
+      transition: transform 180ms ease, background 180ms ease;
+    }
+
+    .results-list li:hover {
+      transform: translateY(-2px);
+      background: rgba(77,208,225,0.08);
+    }
+
+    .results-list strong {
+      display: block;
+      font-size: 1rem;
+      color: #fff;
+    }
+
+    .results-list .result-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .results-list .result-flag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      min-width: 30px;
+    }
+
+    .results-list .result-score {
+      font-weight: 700;
+      color: #fff;
+      min-width: 80px;
+      text-align: center;
+      font-size: 1rem;
+      white-space: nowrap;
+    }
+
+    .results-list .result-teams {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .results-list .result-team-name {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      text-align: center;
+      white-space: normal;
+      line-height: 1.3;
+    }
+
+    .results-list span {
+      color: var(--text-muted);
+      font-size: 0.93rem;
+    }
+
+    .footer-note {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      text-align: center;
+      padding: 12px 0 4px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      vertical-align: middle;
+    }
+    .status-badge.ft { color: var(--success); background: rgba(108,230,182,0.14); }
+    .status-badge.ht { color: var(--warning); background: rgba(255,211,105,0.16); }
+    .status-badge.live { color: #ff8c42; background: rgba(255,140,66,0.14); }
+
+    .live-dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #ff5252;
+      animation: blink 1.1s ease infinite;
+    }
+    @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+    .rank-change {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 999px;
+      margin-left: 6px;
+    }
+    .rank-change.up   { color: var(--success); background: rgba(108,230,182,0.14); }
+    .rank-change.down { color: var(--danger);  background: rgba(255,107,107,0.14); }
+    .rank-change.new  { color: var(--accent);  background: rgba(77,208,225,0.14); }
+
+    .live-group-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.78rem;
+      color: #ff8c42;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .card-row {
+      grid-template-columns: 1fr;
+    }
+
+    th, td {
+      padding: 14px 12px;
+    }
+
+    .hero {
+      padding: 22px;
+    }
+
+    .hero-stats {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .hero-stats > * {
+      min-width: 0;
+      flex: 1 1 100%;
+    }
+
+    .hero-extra {
+      width: 100%;
+    }
+
+    .top-team-card {
+      width: 100%;
+    }
+
+    .page-shell {
+      padding: 0 12px;
+    }
+
+    .section {
+      padding: 18px;
+    }
+
+    table {
+      min-width: 100%;
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        padding: 18px;
+      }
+
+      .section {
+        padding: 18px;
+      }
+
+      .hero-title h1 {
+        font-size: clamp(1.8rem, 6vw, 2.4rem);
+      }
+
+      .hero-title p {
+        font-size: 0.95rem;
+      }
+
+      .summary-grid,
+      .participant-chart {
+        gap: 12px;
+      }
+
+      .chart-row {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-stats {
+        justify-content: flex-start;
+      }
+
+      .hero-stats > * {
+        flex: 1 1 100%;
+      }
+
+      .top-team-card,
+      .section {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .hero {
+        padding: 16px;
+      }
+
+      .hero-title h1 {
+        font-size: clamp(1.6rem, 7vw, 2.2rem);
+      }
+
+      .hero-title p,
+      .section-header p,
+      .results-list span,
+      .participant-column span {
+        font-size: 0.88rem;
+      }
+
+      .top-team-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      .top-team-item strong {
+        font-size: 0.95rem;
+      }
+
+      .top-team-badge {
+        font-size: 0.88rem;
+      }
+
+      .table-shell {
+        overflow-x: auto;
+      }
+
+      table {
+        min-width: 520px;
+      }
+
+      th, td {
+        padding: 10px 8px;
+        font-size: 0.85rem;
+      }
+
+      .team-cell {
+        gap: 8px;
+      }
+
+      .team-flag {
+        width: 28px;
+        height: 20px;
+      }
+
+      .results-list li strong {
+        display: grid;
+        gap: 8px;
+      }
+
+      .results-list li strong span:last-child {
+        margin-left: 0;
+      }
+
+      .page-shell {
+        padding: 0 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-shell">
+    <section class="hero">
+      <div class="hero-top">
+        <div class="hero-title">
+          <h1> Quiniela Mundial 2026-Familia Moreno</h1>
+          <p>Resumen rápido en vivo: puntos, grupos y equipos clave para la quiniela.</p>
+        </div>
+      </div>
+      <div class="hero-extra">
+        <div class="mobile-cta">
+          <a id="mobile-switch-link" href="#">Abrir versión móvil</a>
+        </div>
+        <div class="top-team-card">
+          <strong>TOP 3 equipos con más puntos</strong>
+          <div id="top-teams" class="top-teams-list">Cargando...</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Probabilidad de ganar</h2>
+          <p>Visualiza a los participantes ordenados de mayor a menor según sus puntos y probabilidades.</p>
+        </div>
+      </div>
+      <div id="participant-chart" class="participant-chart"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Grupos de equipos</h2>
+          <p>Puntos por grupo y clasificación de selecciones en la fase de grupos.</p>
+        </div>
+      </div>
+      <div id="groups" class="summary-grid"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Resultados recientes</h2>
+          <p>Últimos resultados reportados desde la fuente FIFA y la actualización en vivo.</p>
+        </div>
+      </div>
+      <ul id="results" class="results-list"></ul>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Equipos seleccionados</h2>
+          <p>Revisa los equipos escogidos por cada participante en la quiniela.</p>
+        </div>
+      </div>
+      <div class="table-shell">
+        <table id="picks">
+          <thead>
+            <tr>
+              <th>Participante</th>
+              <th>Equipo A</th>
+              <th>Equipo B</th>
+              <th>Equipo C</th>
+              <th>Equipo D</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="picks-cards" class="picks-cards"></div>
+    </section>
+
+    <p class="footer-note">Diseño responsivo, actualizaciones en vivo y detalle de cada equipo con iconos de bandera.</p>
+  </main>
+
+  <script>
+    const STAT_PARTICIPANTS = document.getElementById('stat-participants');
+    const STAT_MATCHES = document.getElementById('stat-matches');
+    const STAT_UPDATED = document.getElementById('stat-updated');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const isMobileView = urlParams.get('mobile') === '1';
+    const mobileSwitchLink = document.getElementById('mobile-switch-link');
+    if (mobileSwitchLink) {
+      if (isMobileView) {
+        mobileSwitchLink.href = window.location.pathname;
+        mobileSwitchLink.textContent = 'Ver versión escritorio';
+      } else {
+        mobileSwitchLink.href = `${window.location.pathname}?mobile=1`;
+        mobileSwitchLink.textContent = 'Abrir versión móvil';
+      }
+    }
+
+    if (isMobileView) {
+      document.body.classList.add('mobile-version');
+      const hero = document.querySelector('.hero');
+      if (hero) {
+        const note = document.createElement('p');
+        note.className = 'mobile-note';
+        note.textContent = 'Estás viendo la versión móvil.';
+        hero.insertBefore(note, hero.querySelector('.hero-extra'));
+      }
+    }
+
+    const TEAM_FLAG_MAP = {
+      'México':'mx', 'Mexico':'mx', 'MEX':'mx',
+      'Brasil':'br', 'BRA':'br',
+      'Estados Unidos':'us', 'USA':'us',
+      'Corea del Sur':'kr', 'KOR':'kr',
+      'Curazao':'cw', 'CUW':'cw',
+      'Alemania':'de', 'GER':'de',
+      'Turquía':'tr', 'Turquia':'tr', 'TUR':'tr',
+      'Escocia':'gb-sct', 'SCO':'gb-sct',
+      'Jordania':'jo', 'JOR':'jo',
+      'Uruguay':'uy', 'URU':'uy',
+      'Marruecos':'ma', 'MAR':'ma',
+      'Túnez':'tn', 'Tunez':'tn', 'TUN':'tn',
+      'Cabo Verde':'cv', 'CPV':'cv',
+      'Inglaterra':'gb-eng', 'ENG':'gb-eng',
+      'Ecuador':'ec', 'ECU':'ec',
+      'Bosnia':'ba', 'BIH':'ba',
+      'R. Congo':'cd', 'COD':'cd',
+      'España':'es', 'ESP':'es',
+      'Austria':'at', 'AUT':'at',
+      'Australia':'au', 'AUS':'au',
+      'Qatar':'qa', 'QAT':'qa',
+      'Bélgica':'be', 'Belgica':'be', 'BEL':'be',
+      'Suiza':'ch', 'SUI':'ch',
+      'Egipto':'eg', 'EGY':'eg',
+      'Uzbekistán':'uz', 'Uzbekistan':'uz', 'UZB':'uz',
+      'Países Bajos':'nl', 'Paises Bajos':'nl', 'NED':'nl',
+      'Colombia':'co', 'COL':'co',
+      'Ghana':'gh', 'GHA':'gh',
+      'Irak':'iq', 'IRQ':'iq',
+      'Francia':'fr', 'FRA':'fr',
+      'Suecia':'se', 'SWE':'se',
+      'Arabia Saudita':'sa', 'KSA':'sa',
+      'Portugal':'pt', 'POR':'pt',
+      'Senegal':'sn', 'SEN':'sn',
+      'Chequia':'cz', 'CZE':'cz',
+      'Panamá':'pa', 'Panama':'pa', 'PAN':'pa',
+      'Noruega':'no', 'NOR':'no',
+      'Canadá':'ca', 'Canada':'ca', 'CAN':'ca',
+      'Sudáfrica':'za', 'Sudafrica':'za', 'RSA':'za', 'South Africa':'za', 'south africa':'za',
+      'Argelia':'dz', 'DZA':'dz',
+      'Argentina':'ar', 'ARG':'ar',
+      'Japón':'jp', 'Japon':'jp', 'JPN':'jp',
+      'Nueva Zelanda':'nz', 'NZL':'nz',
+      'Haití':'ht', 'Haiti':'ht', 'HAI':'ht',
+      'Croacia':'hr', 'CRO':'hr',
+      'Costa de Marfil':'ci', 'CIV':'ci',
+      'Paraguay':'py', 'PAR':'py',
+      'Irán':'ir', 'Iran':'ir', 'IRN':'ir'
+    };
+
+    const TEAM_COLOR_MAP = {
+      'México':'#1e8bff','Brasil':'#fecb02','Argentina':'#74b9ff','España':'#e32f2f','Francia':'#2f4cff',
+      'Portugal':'#d9362a','Inglaterra':'#dcdcdc','Qatar':'#8f6cfe','Uruguay':'#52c5f4','Estados Unidos':'#2d5caa',
+      'Alemania':'#000000','Bélgica':'#ffd900','Cabo Verde':'#3f90a7','Marruecos':'#c1272d','Suiza':'#dc2f2f'
+    };
+
+    let eliminatedMap = {};
+    let teamData = [];
+    let currentSort = { key: 'points', direction: 'desc' };
+    let prevTop3 = [];
+
+    function loadEliminated() {
+      try {
+        const stored = localStorage.getItem('eliminatedTeams');
+        const items = stored ? JSON.parse(stored) : [];
+        eliminatedMap = {};
+        if (Array.isArray(items)) {
+          items.forEach(team => { eliminatedMap[team] = true; });
+        }
+        return items;
+      } catch (error) {
+        eliminatedMap = {};
+        return [];
+      }
+    }
+
+    function saveEliminated() {
+      const items = Object.keys(eliminatedMap).filter(team => eliminatedMap[team]);
+      localStorage.setItem('eliminatedTeams', JSON.stringify(items));
+      renderPicks(window.currentPicks || []);
+    }
+
+    function isEliminated(team) {
+      return !!eliminatedMap[team];
+    }
+
+    function renderLeaderboard(standings) {
+      const container = document.getElementById('leaderboard');
+      if (!standings || standings.length === 0) {
+        container.innerHTML = '<div class="chart-row"><div class="chart-meta"><strong>No hay datos</strong></div></div>';
+        return;
+      }
+      const maxScore = Math.max(...standings.map(s => s.score || 0), 1);
+      container.innerHTML = standings.map(st => {
+        const width = Math.round((st.score / maxScore) * 100);
+        return `
+          <div class="chart-row">
+            <div class="chart-meta">
+              <strong>${st.name}</strong>
+              <span>${st.probability}% probabilidad</span>
+            </div>
+            <div>
+              <div class="bar-track"><div class="bar-fill" style="width:${width}%; background: linear-gradient(90deg, ${TEAM_COLOR_MAP[st.name] || '#4dd0e1'}, ${TEAM_COLOR_MAP[st.name] || '#9f5cff'});"></div></div>
+              <div class="team-score">${st.score}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleEliminated(team) {
+      if (!team) return;
+      eliminatedMap[team] = !eliminatedMap[team];
+      saveEliminated();
+      renderPicks(window.currentPicks || []);
+    }
+
+    function getFlagUrl(team) {
+      if (!team) return '';
+      const normalized = team.trim();
+      let code = TEAM_FLAG_MAP[normalized] || TEAM_FLAG_MAP[normalized.toLowerCase()];
+      if (!code) {
+        const key = Object.keys(TEAM_FLAG_MAP).find(k => k.toLowerCase() === normalized.toLowerCase());
+        code = key ? TEAM_FLAG_MAP[key] : undefined;
+      }
+      return code ? `https://flagcdn.com/w40/${code}.png` : '';
+    }
+
+    function formatName(team) {
+      if (!team) return '';
+      return team.replace('R. ', '').replace('Costa de Marfil', 'C. de Marfil');
+    }
+
+    function normalizeTeamName(team) {
+      if (!team) return '';
+      return team.toString().trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+    }
+
+    function renderParticipantLabel(team) {
+      const picks = window.currentPicks || [];
+      const teamKey = normalizeTeamName(team);
+      const teamFlag = getFlagUrl(team);
+      const entry = picks.find(p => Array.isArray(p.teams) && p.teams.some(t => {
+        const candidateKey = normalizeTeamName(t);
+        const candidateFlag = getFlagUrl(t);
+        return candidateKey === teamKey || (teamFlag && candidateFlag && teamFlag === candidateFlag);
+      }));
+      return entry ? `<span style="color: var(--text-muted); font-size:0.9rem;">(${entry.name})</span>` : '';
+    }
+
+    function initializeSorting() {
+      // enable sorting for participants table headers
+      document.querySelectorAll('#standings th').forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', () => {
+          const key = header.textContent.trim().toLowerCase();
+          const tbody = document.querySelector('#standings tbody');
+          const rows = Array.from(tbody.querySelectorAll('tr'));
+          const idxMap = { 'pos': 0, 'nombre': 1, 'puntos': 2, 'probabilidad': 3 };
+          const col = idxMap[key] !== undefined ? idxMap[key] : 2;
+          const multiplier = (currentSort.key === col && currentSort.direction === 'desc') ? 1 : -1;
+          rows.sort((a,b) => {
+            const aText = a.children[col].textContent.trim();
+            const bText = b.children[col].textContent.trim();
+            const aNum = parseFloat(aText) || 0;
+            const bNum = parseFloat(bText) || 0;
+            if (!isNaN(aNum) && !isNaN(bNum)) return (aNum - bNum) * multiplier;
+            return aText.localeCompare(bText, 'es') * multiplier;
+          });
+          tbody.innerHTML = rows.map(r=>r.outerHTML).join('');
+          currentSort = { key: col, direction: multiplier===1? 'asc':'desc' };
+        });
+      });
+    }
+
+    function renderStandings(standings) {
+      const tbody = document.querySelector('#standings tbody');
+      if (!tbody) return;
+      tbody.innerHTML = standings.map((st, index) => `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${st.name}</td>
+          <td>${st.probability}%</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderParticipantChart(standings) {
+      const container = document.getElementById('participant-chart');
+      if (!standings || standings.length === 0) {
+        container.innerHTML = '<div class="participant-column"><strong>No hay datos</strong></div>';
+        return;
+      }
+      const sorted = standings.slice().sort((a, b) => b.probability - a.probability);
+      container.innerHTML = sorted.map(st => {
+        const height = Math.max(48, Math.min(220, Math.round(st.probability * 2)));
+        return `
+          <div class="participant-column">
+            <div class="bar" style="height:${height}px;"></div>
+            <strong>${st.name}</strong>
+            <span>${st.probability}%</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderFlagTag(team) {
+      if (!team) return `<span>${team || ''}</span>`;
+      const normalized = team.trim();
+      let code = TEAM_FLAG_MAP[normalized] || TEAM_FLAG_MAP[normalized.toLowerCase()];
+      if (!code) {
+        const key = Object.keys(TEAM_FLAG_MAP).find(k => k.toLowerCase() === normalized.toLowerCase());
+        code = key ? TEAM_FLAG_MAP[key] : undefined;
+      }
+      if (!code) return `<span>${team}</span>`;
+      return `<span style="display:inline-flex; align-items:center; gap:10px;"><img class="flag-icon" src="https://flagcdn.com/w20/${code}.png" alt="${team} flag" width="20" height="14" loading="lazy"/>${team}</span>`;
+    }
+
+    function renderGroups(groups) {
+      renderTopTeams(groups);
+      const container = document.getElementById('groups');
+      if (!groups || groups.length === 0) {
+        container.innerHTML = '<div class="chart-row"><div class="chart-meta"><strong>No hay datos de grupos disponibles</strong></div></div>';
+        return;
+      }
+      container.innerHTML = groups.map(group => {
+        const liveNote = group.live_matches
+          ? `<span class="live-group-note"><span class="live-dot"></span>${group.live_matches} en juego (no cuenta pts)</span>`
+          : '';
+        return `
+        <div class="section" style="padding:20px; border-radius:24px;">
+          <div class="section-header" style="margin-bottom:14px;">
+            <div>
+              <h2 style="font-size:1rem; margin:0;">${group.group} ${liveNote}</h2>
+              <p style="margin:4px 0 0; color: var(--text-muted); font-size:0.9rem;">Clasificación del grupo</p>
+            </div>
+          </div>
+          <div class="table-shell" style="background: rgba(255,255,255,0.03); border:none; box-shadow:none;">
+            <table style="min-width:100%;">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Equipo</th>
+                  <th>Pts</th>
+                  <th>GF</th>
+                  <th>GA</th>
+                  <th>GD</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${group.standings.map((team, index) => `
+                  <tr>
+                    <td>${index + 1}</td>
+                    <td>${renderFlagTag(team.team)} ${renderParticipantLabel(team.team)}</td>
+                    <td>${team.points}</td>
+                    <td>${team.gf}</td>
+                    <td>${team.ga}</td>
+                    <td>${team.gd}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      }).join('');
+    }
+
+    function renderTopTeams(groups) {
+      const container = document.getElementById('top-teams');
+      if (!groups || groups.length === 0) {
+        container.innerHTML = '<div>No hay datos de equipos aún.</div>';
+        return;
+      }
+
+      const allTeams = groups.flatMap(group => group.standings.map(team => ({
+        team: team.team,
+        points: team.points,
+        gd: team.gd,
+        gf: team.gf
+      })));
+
+      const topTeams = allTeams
+        .sort((a, b) => b.points - a.points || b.gd - a.gd || b.gf - a.gf || a.team.localeCompare(b.team, 'es'))
+        .slice(0, 3);
+
+      const medals = ['🥇', '🥈', '🥉'];
+
+      container.innerHTML = topTeams.map((team, index) => {
+        const prevIndex = prevTop3.findIndex(t => t.team === team.team);
+        let changeHTML = '';
+        if (prevTop3.length > 0) {
+          if (prevIndex === -1) {
+            changeHTML = '<span class="rank-change new">NUEVO</span>';
+          } else if (prevIndex > index) {
+            changeHTML = `<span class="rank-change up">▲ ${prevIndex - index}</span>`;
+          } else if (prevIndex < index) {
+            changeHTML = `<span class="rank-change down">▼ ${index - prevIndex}</span>`;
+          }
+        }
+        return `
+          <div class="top-team-item">
+            <strong>${medals[index]} ${renderFlagTag(team.team)}${changeHTML}</strong>
+            <span class="top-team-badge">${team.points} pts</span>
+          </div>
+        `;
+      }).join('');
+
+      prevTop3 = topTeams.map(t => ({ ...t }));
+    }
+
+    function renderPicks(picks) {
+      window.currentPicks = picks || [];
+      const tbody = document.querySelector('#picks tbody');
+      const cardsContainer = document.getElementById('picks-cards');
+      tbody.innerHTML = picks.map(p => {
+        const items = (p.teams || []).slice(0, 4).map(team => {
+          const labelClass = isEliminated(team) ? 'team-label eliminated' : 'team-label';
+          return `<td><span class="${labelClass}" role="button" tabindex="0" data-team="${team}">${renderFlagTag(team)}</span></td>`;
+        }).join('');
+        return `
+          <tr>
+            <td>${p.name}</td>
+            ${items}
+          </tr>
+        `;
+      }).join('');
+
+      if (cardsContainer) {
+        cardsContainer.innerHTML = picks.map(p => {
+          const teams = (p.teams || []).slice(0, 4).map(team => {
+            return `<div class="picks-card-team">${renderFlagTag(team)}</div>`;
+          }).join('');
+          return `
+            <div class="picks-card">
+              <div class="picks-card-title">${p.name}</div>
+              <div class="picks-card-teams">${teams}</div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function renderStatusBadge(status) {
+      if (!status) return '';
+      const s = status.toUpperCase();
+      if (s === 'FT' || s === 'FINISHED' || s === 'FINAL' || s === 'COMPLETED' || s === 'FT_PEN' || s === 'AET') {
+        return '<span class="status-badge ft">Final</span>';
+      }
+      if (s === 'HT') {
+        return '<span class="status-badge ht">Medio Tiempo</span>';
+      }
+      // live time like "67'" or "LIVE"
+      const label = s === 'LIVE' ? 'En Juego' : `En Juego ${status}`;
+      return `<span class="status-badge live"><span class="live-dot"></span>${label}</span>`;
+    }
+
+    function renderResults(results) {
+      const list = document.getElementById('results');
+      if (!results.length) {
+        list.innerHTML = '<li>No hay resultados reportados aún.</li>';
+        return;
+      }
+      const isMobileView = document.body.classList.contains('mobile-version');
+      list.innerHTML = results.map(result => {
+        const flagA = getFlagUrl(result.team_a);
+        const flagB = getFlagUrl(result.team_b);
+        const flagAImg = flagA
+          ? `<img class="flag-icon" src="${flagA}" alt="${result.team_a} flag" width="22" height="16" loading="lazy" />`
+          : '';
+        const flagBImg = flagB
+          ? `<img class="flag-icon" src="${flagB}" alt="${result.team_b} flag" width="22" height="16" loading="lazy" />`
+          : '';
+        const statusBadge = renderStatusBadge(result.status);
+
+        if (isMobileView) {
+          return `
+          <li class="mobile-result">
+            <div class="result-row">
+              <span class="result-flag">${flagAImg}</span>
+              <span class="result-score">${result.score_a} - ${result.score_b}</span>
+              <span class="result-flag">${flagBImg}</span>
+            </div>
+            <div class="result-teams">
+              <span class="result-team-name">${result.team_a}</span>
+              <span class="result-team-name">${result.team_b}</span>
+            </div>
+            ${statusBadge ? `<div style="text-align:center; margin-top:4px;">${statusBadge}</div>` : ''}
+          </li>
+        `;
+        }
+
+        return `
+        <li>
+          <strong>
+            <span style="display:inline-flex; align-items:center; gap:8px;">
+              ${flagAImg}${result.team_a}
+            </span>
+            ${result.score_a} - ${result.score_b}
+            <span style="display:inline-flex; align-items:center; gap:8px; margin-left:12px;">
+              ${flagBImg}${result.team_b}
+            </span>
+          </strong>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:2px;">
+            <span>${result.match}</span>
+            ${statusBadge}
+          </div>
+        </li>
+      `;
+      }).join('');
+    }
+
+    function updateStats(picks, results) {
+      if (STAT_PARTICIPANTS) {
+        STAT_PARTICIPANTS.textContent = picks.length;
+      }
+      if (STAT_MATCHES) {
+        STAT_MATCHES.textContent = results.length;
+      }
+      if (STAT_UPDATED) {
+        STAT_UPDATED.textContent = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+      }
+    }
+
+    async function loadInitial() {
+      loadEliminated();
+      const [picks, standings, results, groups] = await Promise.all([
+        fetch('/api/picks').then(r => r.json()),
+        fetch('/api/standings').then(r => r.json()),
+        fetch('/api/results').then(r => r.json()),
+        fetch('/api/groups').then(r => r.json())
+      ]);
+
+      renderPicks(picks);
+      renderResults(results);
+      renderGroups(groups);
+      renderParticipantChart(standings);
+      updateStats(picks, results);
+    }
+
+    const ws = new WebSocket((location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host + '/ws');
+    ws.addEventListener('message', event => {
+      const payload = JSON.parse(event.data);
+      if (payload.type === 'init' || payload.type === 'update') {
+        renderResults(payload.results || []);
+        renderGroups(payload.groups || []);
+        // apply eliminated teams from backend if provided
+        if (payload.eliminatedTeams && Array.isArray(payload.eliminatedTeams)) {
+          payload.eliminatedTeams.forEach(t => eliminatedMap[t] = true);
+          saveEliminated();
+        }
+        const currentPicks = window.currentPicks || [];
+        renderParticipantChart(payload.standings || []);
+        renderTopTeams(payload.groups || []);
+        updateStats({ length: payload.picks_count || currentPicks.length }, payload.results || []);
+      }
+    });
+
+    // allow clicking on team names to toggle elimination (local UI state)
+    document.getElementById('picks').addEventListener('click', e => {
+      const el = e.target.closest('.team-label');
+      if (!el) return;
+      const team = el.dataset.team;
+      toggleEliminated(team);
+    });
+
+    document.getElementById('picks').addEventListener('keydown', e => {
+      const el = e.target.closest('.team-label');
+      if (!el) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleEliminated(el.dataset.team);
+      }
+    });
+
+    loadInitial();
+  </script>
+</body>
+</html>
