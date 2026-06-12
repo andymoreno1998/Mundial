@@ -211,8 +211,16 @@ async def fetch_from_api(api_url: str, api_key: str = None) -> List[Dict]:
             ft = score.get('fullTime') or {}
             score_a = ft.get('home')
             score_b = ft.get('away')
+            # fullTime is null during live matches; fall back to halfTime score
             if score_a is None or score_b is None:
-                continue
+                ht = score.get('halfTime') or {}
+                score_a = ht.get('home')
+                score_b = ht.get('away')
+            # for live/HT matches still without score, default to 0-0 so entry is tracked
+            if score_a is None:
+                score_a = 0
+            if score_b is None:
+                score_b = 0
 
             team_a_raw = (m.get('homeTeam') or {}).get('name') or ''
             team_b_raw = (m.get('awayTeam') or {}).get('name') or ''
