@@ -948,8 +948,8 @@
     <section class="section">
       <div class="section-header">
         <div>
-          <h2>Resultados recientes</h2>
-          <p>Últimos resultados reportados desde la fuente FIFA y la actualización en vivo.</p>
+          <h2>Últimos 5 resultados</h2>
+          <p>Los 5 partidos más recientes reportados con actualización en vivo.</p>
         </div>
       </div>
       <ul id="results" class="results-list"></ul>
@@ -1377,7 +1377,7 @@
         return;
       }
       const isMobileView = document.body.classList.contains('mobile-version');
-      list.innerHTML = results.slice().reverse().map(result => {
+      list.innerHTML = results.slice().reverse().slice(0, 5).map(result => {
         const flagA = getFlagUrl(result.team_a);
         const flagB = getFlagUrl(result.team_b);
         const flagAImg = flagA
