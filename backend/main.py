@@ -407,20 +407,26 @@ async def start_background_fetcher():
     try:
         with open(cfg_path, encoding='utf-8') as f:
             cfg = _json.load(f)
+        print('[fetcher] config.json cargado')
     except Exception:
         cfg = {}
-    # env variables override config.json (used in production/Railway)
+        print('[fetcher] config.json no encontrado, usando variables de entorno')
+
     if os.environ.get('FOOTBALL_API_KEY'):
         cfg['api_key'] = os.environ['FOOTBALL_API_KEY']
+        print('[fetcher] FOOTBALL_API_KEY cargada desde entorno')
     if os.environ.get('FOOTBALL_API_URL'):
         cfg['api_url'] = os.environ['FOOTBALL_API_URL']
     if os.environ.get('FOOTBALL_API_MODE'):
         cfg['mode'] = os.environ['FOOTBALL_API_MODE']
-    # if no config at all, default to football-data.org
+
     if not cfg.get('mode'):
         cfg['mode'] = 'api'
     if not cfg.get('api_url'):
         cfg['api_url'] = 'https://api.football-data.org/v4/competitions/WC/matches'
+
+    has_key = bool(cfg.get('api_key'))
+    print(f'[fetcher] modo={cfg["mode"]} url={cfg["api_url"]} api_key={"OK" if has_key else "FALTA"}')
 
     interval = int(cfg.get('interval_seconds', 120))
 
@@ -428,19 +434,18 @@ async def start_background_fetcher():
         while True:
             try:
                 added = await fetcher.fetch_and_update(cfg)
+                print(f'[fetcher] fetch completado — {added} nuevos resultados')
                 if added:
-                    # broadcast new state
                     picks = load_picks()
                     results = load_results()
                     standings = compute_standings(picks, results)
-                    # update automatic eliminations if Round of 32 is defined
                     try:
                         update_eliminated_if_round32(results)
                     except Exception:
                         pass
                     await manager.broadcast({'type': 'update', 'results': results, 'standings': standings, 'groups': compute_group_standings(results), 'eliminatedTeams': load_eliminated()})
-            except Exception:
-                pass
+            except Exception as e:
+                print(f'[fetcher] ERROR: {e}')
             await asyncio.sleep(interval)
 
     asyncio.create_task(looper())
