@@ -906,100 +906,135 @@
 
     /* ── BRACKET ─────────────────────────────────────────── */
     .bracket-container {
-      display: flex;
-      gap: 0;
-      align-items: flex-start;
+      padding: 4px 0 16px;
       min-width: max-content;
-      padding: 8px 0 16px;
     }
 
     .bracket-col {
       display: flex;
       flex-direction: column;
-      align-items: stretch;
+      flex-shrink: 0;
       position: relative;
     }
 
     .bracket-round-title {
       text-align: center;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.07em;
       color: var(--accent);
-      padding: 0 8px 10px;
+      padding: 0 4px 8px;
       white-space: nowrap;
+      height: 28px;
     }
 
-    .bracket-matches-col {
+    .bracket-slot-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       position: relative;
-      flex: 1;
+      flex-shrink: 0;
     }
 
     .bracket-match {
-      position: absolute;
-      width: 170px;
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
+      border-radius: 10px;
       overflow: hidden;
+      width: 100%;
     }
 
-    .bracket-slot {
+    .bracket-team-slot {
       display: flex;
       flex-direction: column;
       justify-content: center;
       padding: 5px 8px;
-      min-height: 38px;
+      height: 35px;
       border-bottom: 1px solid rgba(255,255,255,0.06);
-      transition: background 160ms;
     }
 
-    .bracket-slot:last-child {
-      border-bottom: none;
-    }
+    .bracket-team-slot:last-child { border-bottom: none; }
 
-    .bracket-slot.winner {
-      background: rgba(77,208,225,0.12);
-    }
+    .bracket-team-slot.winner { background: rgba(77,208,225,0.13); }
+    .bracket-team-slot.empty .b-name { color: var(--text-muted); font-style: italic; }
 
     .bracket-team-row {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
     }
 
-    .bracket-team-name {
-      font-size: 0.78rem;
+    .b-name {
+      font-size: 0.76rem;
       color: #fff;
       font-weight: 500;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 110px;
     }
 
-    .bracket-slot.empty .bracket-team-name {
+    .b-part {
+      font-size: 0.64rem;
       color: var(--text-muted);
-      font-style: italic;
-    }
-
-    .bracket-participant {
-      font-size: 0.67rem;
-      color: var(--text-muted);
-      margin-top: 1px;
-      padding-left: 24px;
+      padding-left: 23px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 140px;
+      line-height: 1.2;
     }
 
-    .bracket-connector {
-      position: absolute;
-      right: -30px;
-      width: 30px;
-      pointer-events: none;
+    /* Mobile bracket */
+    .bracket-mobile { display: none; }
+    .bracket-desktop { display: flex; }
+
+    .bmob-round { margin-bottom: 18px; }
+
+    .bmob-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .bmob-match {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .bmob-team {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .bmob-team:last-child { border-bottom: none; }
+    .bmob-team.winner { background: rgba(77,208,225,0.12); }
+    .bmob-team.empty { opacity: 0.5; }
+
+    .bmob-name {
+      font-size: 0.88rem;
+      color: #fff;
+      font-weight: 500;
+    }
+
+    .bmob-team.empty .bmob-name { color: var(--text-muted); font-style: italic; }
+
+    .bmob-participant {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 860px) {
+      .bracket-desktop { display: none !important; }
+      .bracket-mobile  { display: block !important; }
     }
   </style>
 </head>
@@ -1060,9 +1095,10 @@
           <p>Bracket automático desde la Ronda de 32. Las casillas vacías se llenan al avanzar el torneo.</p>
         </div>
       </div>
-      <div id="bracket-wrap" style="overflow-x:auto; padding-bottom:12px;">
-        <div id="bracket" class="bracket-container"></div>
+      <div style="overflow-x:auto; padding-bottom:12px;">
+        <div id="bracket" class="bracket-container bracket-desktop"></div>
       </div>
+      <div id="bracket-mobile" class="bracket-mobile"></div>
     </section>
 
     <section class="section">
@@ -1548,132 +1584,176 @@
     }
 
     // ── BRACKET ────────────────────────────────────────────────
-    const MATCH_H = 80;   // px height of each match card (2 slots × 40px)
-    const COL_W   = 170;  // match card width
-    const GAP_W   = 30;   // connector gap between columns
+    const B_TEAM_H  = 35;
+    const B_MATCH_H = B_TEAM_H * 2;   // 70px card
+    const B_COL_W   = 176;
+    const B_GAP_W   = 32;              // gap between columns = space for SVG lines
+    const B_TITLE_H = 28;
+    const B_ROWS    = 16;
+    const B_SLOT_H  = 80;             // slot height for R32
+    const B_TOTAL_H = B_ROWS * B_SLOT_H; // 1280px
+
+    function bFlag(team) {
+      const url = getFlagUrl(team || '');
+      return url
+        ? `<img src="${url}" width="18" height="13" loading="lazy" style="border-radius:3px;flex-shrink:0;" />`
+        : `<span style="display:inline-block;width:18px;height:13px;background:rgba(255,255,255,0.08);border-radius:3px;flex-shrink:0;"></span>`;
+    }
+
+    function bTeamHTML(team, part, isWinner) {
+      return `<div class="bracket-team-slot${isWinner ? ' winner' : ''}${!team ? ' empty' : ''}">
+        <div class="bracket-team-row">${bFlag(team)}<span class="b-name">${team || '—'}</span></div>
+        ${part ? `<div class="b-part">${part}</div>` : ''}
+      </div>`;
+    }
+
+    // Y center of match index mi in a round with n matches
+    function bMatchCY(n, mi) {
+      const slotH = B_TOTAL_H / n;
+      return B_TITLE_H + mi * slotH + slotH / 2;
+    }
 
     function renderBracket(data) {
-      const container = document.getElementById('bracket');
-      if (!data || !data.rounds) { container.innerHTML = ''; return; }
+      const deskEl = document.getElementById('bracket');
+      const mobEl  = document.getElementById('bracket-mobile');
+      if (!data || !data.rounds) { deskEl.innerHTML = ''; if (mobEl) mobEl.innerHTML = ''; return; }
 
       const rounds = data.rounds;
-      const maxM   = 16; // always size the column height for R32 (16 matches)
-      const totalH = maxM * MATCH_H;
+      const nRounds = rounds.length;
 
-      container.innerHTML = '';
-      container.style.height = (totalH + 40) + 'px'; // +40 for title row
+      // ── Desktop ──────────────────────────────────────────────
+      deskEl.innerHTML = '';
+      // total SVG width = all columns + all gaps
+      const svgW = nRounds * B_COL_W + (nRounds - 1) * B_GAP_W;
+      const svgH = B_TOTAL_H + B_TITLE_H;
 
+      // Wrapper with position:relative so SVG overlay sits on top
+      const wrap = document.createElement('div');
+      wrap.style.cssText = `position:relative;display:flex;gap:${B_GAP_W}px;align-items:flex-start;`;
+      deskEl.appendChild(wrap);
+
+      // Build columns
       rounds.forEach((round, ri) => {
+        const n     = round.matches.length;
+        const slotH = B_TOTAL_H / n;
+
         const col = document.createElement('div');
         col.className = 'bracket-col';
-        col.style.width = (COL_W + (ri < rounds.length - 1 ? GAP_W : 0)) + 'px';
-        col.style.flexShrink = '0';
-        col.style.position = 'relative';
+        col.style.width = B_COL_W + 'px';
 
-        const title = document.createElement('div');
-        title.className = 'bracket-round-title';
-        title.textContent = round.name;
-        col.appendChild(title);
-
-        const n = round.matches.length;
-        const slotH = totalH / n;
+        const titleEl = document.createElement('div');
+        titleEl.className = 'bracket-round-title';
+        titleEl.textContent = round.name;
+        col.appendChild(titleEl);
 
         round.matches.forEach((match, mi) => {
-          const topOffset = mi * slotH + slotH / 2 - MATCH_H / 2 + 40;
+          const row = document.createElement('div');
+          row.className = 'bracket-slot-row';
+          row.style.height = slotH + 'px';
 
           const card = document.createElement('div');
           card.className = 'bracket-match';
-          card.style.top  = topOffset + 'px';
-          card.style.left = '0';
-          card.style.position = 'absolute';
-
-          [
-            { team: match.team_a, part: match.participant_a },
-            { team: match.team_b, part: match.participant_b }
-          ].forEach(({ team, part }) => {
-            const slot = document.createElement('div');
-            const hasTeam = !!team;
-            const isWinner = hasTeam && match.winner === team;
-            slot.className = 'bracket-slot' + (isWinner ? ' winner' : '') + (!hasTeam ? ' empty' : '');
-
-            const flagUrl = getFlagUrl(team || '');
-            const flagHtml = flagUrl
-              ? `<img class="flag-icon" src="${flagUrl}" width="18" height="13" loading="lazy" style="border-radius:3px;flex-shrink:0;" />`
-              : `<span style="display:inline-block;width:18px;height:13px;background:rgba(255,255,255,0.08);border-radius:3px;flex-shrink:0;"></span>`;
-
-            slot.innerHTML = `
-              <div class="bracket-team-row">
-                ${flagHtml}
-                <span class="bracket-team-name">${team || 'Por definir'}</span>
-              </div>
-              ${part ? `<div class="bracket-participant">${part}</div>` : ''}
-            `;
-            card.appendChild(slot);
-          });
-
-          // connector lines to the right (SVG)
-          if (ri < rounds.length - 1) {
-            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            svg.setAttribute('width', GAP_W);
-            svg.setAttribute('height', MATCH_H);
-            svg.style.cssText = `position:absolute;right:-${GAP_W}px;top:0;overflow:visible;`;
-
-            const midY = MATCH_H / 2;
-            // horizontal line from card right to mid of gap
-            const hLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            hLine.setAttribute('x1', 0); hLine.setAttribute('y1', midY);
-            hLine.setAttribute('x2', GAP_W); hLine.setAttribute('y2', midY);
-            hLine.setAttribute('stroke', 'rgba(77,208,225,0.25)');
-            hLine.setAttribute('stroke-width', '1.5');
-            svg.appendChild(hLine);
-
-            // vertical connector drawn by the PARENT match in next round
-            // (handled when we know pairs)
-            card.appendChild(svg);
-          }
-
-          col.appendChild(card);
+          card.style.width = B_COL_W + 'px';
+          card.innerHTML =
+            bTeamHTML(match.team_a, match.participant_a, !!match.winner && match.winner === match.team_a) +
+            bTeamHTML(match.team_b, match.participant_b, !!match.winner && match.winner === match.team_b);
+          row.appendChild(card);
+          col.appendChild(row);
         });
 
-        container.appendChild(col);
+        wrap.appendChild(col);
       });
 
-      // Draw vertical connectors: for each pair of matches in round n,
-      // draw a vertical line at the midpoint of the gap column
+      // ── SVG connector overlay ─────────────────────────────────
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('width',  svgW);
+      svg.setAttribute('height', svgH);
+      svg.style.cssText = `position:absolute;top:0;left:0;pointer-events:none;overflow:visible;`;
+
+      const LINE = 'rgba(77,208,225,0.35)';
+      const LW   = '1.5';
+
+      function line(x1, y1, x2, y2) {
+        const el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        el.setAttribute('x1', x1); el.setAttribute('y1', y1);
+        el.setAttribute('x2', x2); el.setAttribute('y2', y2);
+        el.setAttribute('stroke', LINE);
+        el.setAttribute('stroke-width', LW);
+        el.setAttribute('stroke-linecap', 'round');
+        svg.appendChild(el);
+      }
+
       rounds.forEach((round, ri) => {
-        if (ri >= rounds.length - 1) return;
-        const n      = round.matches.length;
-        const slotH  = totalH / n;
-        const nextN  = rounds[ri + 1].matches.length;
-        const nextSlotH = totalH / nextN;
-        const colEl  = container.children[ri];
+        if (ri >= nRounds - 1) return;          // no lines after final
+        const n     = round.matches.length;
+        const nextN = rounds[ri + 1].matches.length;
 
-        for (let mi = 0; mi < n; mi += 2) {
-          const topA = mi * slotH + slotH / 2 - MATCH_H / 2 + 40 + MATCH_H / 2;
-          const topB = (mi + 1) * slotH + slotH / 2 - MATCH_H / 2 + 40 + MATCH_H / 2;
-          const nextTop = Math.floor(mi / 2) * nextSlotH + nextSlotH / 2 - MATCH_H / 2 + 40 + MATCH_H / 2;
+        // X positions
+        const colLeftX  = ri * (B_COL_W + B_GAP_W);
+        const rightX    = colLeftX + B_COL_W;       // right edge of this col
+        const midX      = rightX + B_GAP_W / 2;     // center of gap
+        const nextLeftX = (ri + 1) * (B_COL_W + B_GAP_W); // left edge of next col
 
-          const svgV = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-          svgV.style.cssText = `position:absolute;left:${COL_W}px;top:0;width:${GAP_W}px;pointer-events:none;`;
-          svgV.setAttribute('height', totalH + 40);
-          svgV.setAttribute('width', GAP_W);
+        for (let mi = 0; mi < n; mi++) {
+          const cy = bMatchCY(n, mi);
 
-          const vLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          vLine.setAttribute('x1', GAP_W); vLine.setAttribute('y1', topA);
-          vLine.setAttribute('x2', GAP_W); vLine.setAttribute('y2', topB);
-          vLine.setAttribute('stroke', 'rgba(77,208,225,0.25)');
-          vLine.setAttribute('stroke-width', '1.5');
+          // horizontal line from card right → gap center
+          line(rightX, cy, midX, cy);
 
-          const hNext = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          hNext.setAttribute('x1', GAP_W); hNext.setAttribute('y1', nextTop);
-          hNext.setAttribute('x2', GAP_W); hNext.setAttribute('y2', nextTop);
+          // for even matches: vertical connector + entry line into next round
+          if (mi % 2 === 0 && mi + 1 < n) {
+            const cyNext = bMatchCY(n, mi + 1);
+            const parentCY = bMatchCY(nextN, Math.floor(mi / 2));
 
-          svgV.appendChild(vLine);
-          colEl.appendChild(svgV);
+            // vertical bridge
+            line(midX, cy, midX, cyNext);
+            // horizontal into parent match
+            line(midX, parentCY, nextLeftX, parentCY);
+          }
         }
       });
-    }
 
+      wrap.appendChild(svg);
+
+      // ── Mobile ───────────────────────────────────────────────
+      if (!mobEl) return;
+      mobEl.innerHTML = '';
+
+      rounds.forEach(round => {
+        const sec = document.createElement('div');
+        sec.className = 'bmob-round';
+
+        const t = document.createElement('div');
+        t.className = 'bmob-title';
+        t.textContent = round.name;
+        sec.appendChild(t);
+
+        round.matches.forEach(match => {
+          const card = document.createElement('div');
+          card.className = 'bmob-match';
+
+          [{team: match.team_a, part: match.participant_a},
+           {team: match.team_b, part: match.participant_b}].forEach(({team, part}) => {
+            const isWinner = !!match.winner && match.winner === team;
+            const row = document.createElement('div');
+            row.className = 'bmob-team' + (isWinner ? ' winner' : '') + (!team ? ' empty' : '');
+            const fUrl = getFlagUrl(team || '');
+            row.innerHTML = `
+              ${fUrl ? `<img src="${fUrl}" width="22" height="16" loading="lazy" style="border-radius:3px;flex-shrink:0;" />` : `<span style="display:inline-block;width:22px;height:16px;background:rgba(255,255,255,0.08);border-radius:3px;flex-shrink:0;"></span>`}
+              <div style="min-width:0;">
+                <div class="bmob-name">${team || '—'}</div>
+                ${part ? `<div class="bmob-participant">${part}</div>` : ''}
+              </div>
+            `;
+            card.appendChild(row);
+          });
+
+          sec.appendChild(card);
+        });
+
+        mobEl.appendChild(sec);
+      });
+    }
     // ── END BRACKET ────────────────────────────────────────────
 
     async function loadInitial() {
