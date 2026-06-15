@@ -34,6 +34,7 @@ TEAM_CODE_MAP = {
     'tunez': 'TUN',
     'caboverde': 'CPV',
     'capeverde': 'CPV',
+    'capeverdeislands': 'CPV',
     'inglaterra': 'ENG',
     'ecuador': 'ECU',
     'bosnia': 'BIH',

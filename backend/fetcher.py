@@ -111,6 +111,7 @@ _EN_TO_ES: Dict[str, str] = {
     'Morocco': 'Marruecos',
     'Tunisia': 'Túnez',
     'Cape Verde': 'Cabo Verde',
+    'Cape Verde Islands': 'Cabo Verde',
     'England': 'Inglaterra',
     'Ecuador': 'Ecuador',
     'Bosnia and Herzegovina': 'Bosnia',
