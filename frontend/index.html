@@ -903,6 +903,104 @@
         padding: 0 10px;
       }
     }
+
+    /* ── BRACKET ─────────────────────────────────────────── */
+    .bracket-container {
+      display: flex;
+      gap: 0;
+      align-items: flex-start;
+      min-width: max-content;
+      padding: 8px 0 16px;
+    }
+
+    .bracket-col {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      position: relative;
+    }
+
+    .bracket-round-title {
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      padding: 0 8px 10px;
+      white-space: nowrap;
+    }
+
+    .bracket-matches-col {
+      position: relative;
+      flex: 1;
+    }
+
+    .bracket-match {
+      position: absolute;
+      width: 170px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .bracket-slot {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 5px 8px;
+      min-height: 38px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      transition: background 160ms;
+    }
+
+    .bracket-slot:last-child {
+      border-bottom: none;
+    }
+
+    .bracket-slot.winner {
+      background: rgba(77,208,225,0.12);
+    }
+
+    .bracket-team-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .bracket-team-name {
+      font-size: 0.78rem;
+      color: #fff;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 110px;
+    }
+
+    .bracket-slot.empty .bracket-team-name {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .bracket-participant {
+      font-size: 0.67rem;
+      color: var(--text-muted);
+      margin-top: 1px;
+      padding-left: 24px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 140px;
+    }
+
+    .bracket-connector {
+      position: absolute;
+      right: -30px;
+      width: 30px;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -953,6 +1051,18 @@
         </div>
       </div>
       <ul id="results" class="results-list"></ul>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Cuadro de Eliminatorias</h2>
+          <p>Bracket automático desde la Ronda de 32. Las casillas vacías se llenan al avanzar el torneo.</p>
+        </div>
+      </div>
+      <div id="bracket-wrap" style="overflow-x:auto; padding-bottom:12px;">
+        <div id="bracket" class="bracket-container"></div>
+      </div>
     </section>
 
     <section class="section">
@@ -1437,19 +1547,150 @@
       }
     }
 
+    // ── BRACKET ────────────────────────────────────────────────
+    const MATCH_H = 80;   // px height of each match card (2 slots × 40px)
+    const COL_W   = 170;  // match card width
+    const GAP_W   = 30;   // connector gap between columns
+
+    function renderBracket(data) {
+      const container = document.getElementById('bracket');
+      if (!data || !data.rounds) { container.innerHTML = ''; return; }
+
+      const rounds = data.rounds;
+      const maxM   = 16; // always size the column height for R32 (16 matches)
+      const totalH = maxM * MATCH_H;
+
+      container.innerHTML = '';
+      container.style.height = (totalH + 40) + 'px'; // +40 for title row
+
+      rounds.forEach((round, ri) => {
+        const col = document.createElement('div');
+        col.className = 'bracket-col';
+        col.style.width = (COL_W + (ri < rounds.length - 1 ? GAP_W : 0)) + 'px';
+        col.style.flexShrink = '0';
+        col.style.position = 'relative';
+
+        const title = document.createElement('div');
+        title.className = 'bracket-round-title';
+        title.textContent = round.name;
+        col.appendChild(title);
+
+        const n = round.matches.length;
+        const slotH = totalH / n;
+
+        round.matches.forEach((match, mi) => {
+          const topOffset = mi * slotH + slotH / 2 - MATCH_H / 2 + 40;
+
+          const card = document.createElement('div');
+          card.className = 'bracket-match';
+          card.style.top  = topOffset + 'px';
+          card.style.left = '0';
+          card.style.position = 'absolute';
+
+          [
+            { team: match.team_a, part: match.participant_a },
+            { team: match.team_b, part: match.participant_b }
+          ].forEach(({ team, part }) => {
+            const slot = document.createElement('div');
+            const hasTeam = !!team;
+            const isWinner = hasTeam && match.winner === team;
+            slot.className = 'bracket-slot' + (isWinner ? ' winner' : '') + (!hasTeam ? ' empty' : '');
+
+            const flagUrl = getFlagUrl(team || '');
+            const flagHtml = flagUrl
+              ? `<img class="flag-icon" src="${flagUrl}" width="18" height="13" loading="lazy" style="border-radius:3px;flex-shrink:0;" />`
+              : `<span style="display:inline-block;width:18px;height:13px;background:rgba(255,255,255,0.08);border-radius:3px;flex-shrink:0;"></span>`;
+
+            slot.innerHTML = `
+              <div class="bracket-team-row">
+                ${flagHtml}
+                <span class="bracket-team-name">${team || 'Por definir'}</span>
+              </div>
+              ${part ? `<div class="bracket-participant">${part}</div>` : ''}
+            `;
+            card.appendChild(slot);
+          });
+
+          // connector lines to the right (SVG)
+          if (ri < rounds.length - 1) {
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', GAP_W);
+            svg.setAttribute('height', MATCH_H);
+            svg.style.cssText = `position:absolute;right:-${GAP_W}px;top:0;overflow:visible;`;
+
+            const midY = MATCH_H / 2;
+            // horizontal line from card right to mid of gap
+            const hLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            hLine.setAttribute('x1', 0); hLine.setAttribute('y1', midY);
+            hLine.setAttribute('x2', GAP_W); hLine.setAttribute('y2', midY);
+            hLine.setAttribute('stroke', 'rgba(77,208,225,0.25)');
+            hLine.setAttribute('stroke-width', '1.5');
+            svg.appendChild(hLine);
+
+            // vertical connector drawn by the PARENT match in next round
+            // (handled when we know pairs)
+            card.appendChild(svg);
+          }
+
+          col.appendChild(card);
+        });
+
+        container.appendChild(col);
+      });
+
+      // Draw vertical connectors: for each pair of matches in round n,
+      // draw a vertical line at the midpoint of the gap column
+      rounds.forEach((round, ri) => {
+        if (ri >= rounds.length - 1) return;
+        const n      = round.matches.length;
+        const slotH  = totalH / n;
+        const nextN  = rounds[ri + 1].matches.length;
+        const nextSlotH = totalH / nextN;
+        const colEl  = container.children[ri];
+
+        for (let mi = 0; mi < n; mi += 2) {
+          const topA = mi * slotH + slotH / 2 - MATCH_H / 2 + 40 + MATCH_H / 2;
+          const topB = (mi + 1) * slotH + slotH / 2 - MATCH_H / 2 + 40 + MATCH_H / 2;
+          const nextTop = Math.floor(mi / 2) * nextSlotH + nextSlotH / 2 - MATCH_H / 2 + 40 + MATCH_H / 2;
+
+          const svgV = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svgV.style.cssText = `position:absolute;left:${COL_W}px;top:0;width:${GAP_W}px;pointer-events:none;`;
+          svgV.setAttribute('height', totalH + 40);
+          svgV.setAttribute('width', GAP_W);
+
+          const vLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          vLine.setAttribute('x1', GAP_W); vLine.setAttribute('y1', topA);
+          vLine.setAttribute('x2', GAP_W); vLine.setAttribute('y2', topB);
+          vLine.setAttribute('stroke', 'rgba(77,208,225,0.25)');
+          vLine.setAttribute('stroke-width', '1.5');
+
+          const hNext = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          hNext.setAttribute('x1', GAP_W); hNext.setAttribute('y1', nextTop);
+          hNext.setAttribute('x2', GAP_W); hNext.setAttribute('y2', nextTop);
+
+          svgV.appendChild(vLine);
+          colEl.appendChild(svgV);
+        }
+      });
+    }
+
+    // ── END BRACKET ────────────────────────────────────────────
+
     async function loadInitial() {
       loadEliminated();
-      const [picks, standings, results, groups] = await Promise.all([
+      const [picks, standings, results, groups, bracket] = await Promise.all([
         fetch('/api/picks').then(r => r.json()),
         fetch('/api/standings').then(r => r.json()),
         fetch('/api/results').then(r => r.json()),
-        fetch('/api/groups').then(r => r.json())
+        fetch('/api/groups').then(r => r.json()),
+        fetch('/api/bracket').then(r => r.json()),
       ]);
 
       renderPicks(picks);
       renderResults(results);
       renderGroups(groups);
       renderParticipantChart(standings);
+      renderBracket(bracket);
       updateStats(picks, results);
     }
 
