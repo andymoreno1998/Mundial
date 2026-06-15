@@ -204,6 +204,121 @@ def update_eliminated_if_round32(results: List[Dict]):
 
 _FINISHED_STATUSES = {'FT', 'FINISHED', 'FINAL', 'COMPLETED', 'FT_PEN', 'AET'}
 
+# ── BRACKET ──────────────────────────────────────────────────────────────────
+GROUPS = list('ABCDEFGHIJKL')
+
+# Round of 32: 16 matches.  Slot codes: W_X = winner group X,
+# R_X = runner-up group X,  T{n} = n-th best third-place team.
+R32_MATCHES = [
+    ('W_A', 'T1'),  ('W_B', 'T2'),
+    ('W_C', 'T3'),  ('W_D', 'T4'),
+    ('W_E', 'T5'),  ('R_A', 'R_B'),
+    ('W_F', 'T6'),  ('R_C', 'R_D'),
+    ('W_G', 'T7'),  ('W_H', 'T8'),
+    ('W_I', 'R_E'), ('W_J', 'R_F'),
+    ('W_K', 'R_G'), ('W_L', 'R_H'),
+    ('R_I', 'R_J'), ('R_K', 'R_L'),
+]
+
+
+def compute_qualifiers(groups_data: list) -> dict:
+    group_map = {g['group']: g['standings'] for g in groups_data}
+    qualifiers: Dict[str, str] = {}
+    thirds = []
+
+    for letter in GROUPS:
+        gname = f'Group {letter}'
+        standings = group_map.get(gname, [])
+        complete = len(standings) >= 4 and all(t.get('played', 0) >= 3 for t in standings[:4])
+
+        qualifiers[f'W_{letter}'] = standings[0]['team'] if complete and len(standings) >= 1 else None
+        qualifiers[f'R_{letter}'] = standings[1]['team'] if complete and len(standings) >= 2 else None
+
+        if complete and len(standings) >= 3:
+            t = standings[2]
+            thirds.append({'team': t['team'], 'points': t['points'], 'gd': t['gd'], 'gf': t['gf']})
+
+    thirds.sort(key=lambda x: (-x['points'], -x['gd'], -x['gf']))
+    for i in range(8):
+        qualifiers[f'T{i+1}'] = thirds[i]['team'] if i < len(thirds) else None
+
+    return qualifiers
+
+
+def find_ko_winner(team_a: str, team_b: str, results: list) -> str:
+    if not team_a or not team_b:
+        return None
+    na, nb = normalize_team_name(team_a), normalize_team_name(team_b)
+    for r in results:
+        ra = normalize_team_name(r.get('team_a', ''))
+        rb = normalize_team_name(r.get('team_b', ''))
+        if (ra == na and rb == nb) or (ra == nb and rb == na):
+            if str(r.get('status', '')).upper() not in _FINISHED_STATUSES:
+                continue
+            sa, sb = r.get('score_a', 0), r.get('score_b', 0)
+            if sa > sb:
+                return r['team_a']
+            if sb > sa:
+                return r['team_b']
+    return None
+
+
+def compute_bracket(results: list, picks: list, groups_data: list) -> dict:
+    qualifiers = compute_qualifiers(groups_data)
+    picks_map: Dict[str, str] = {}
+    for p in picks:
+        for team in p.get('teams', []):
+            picks_map[team] = p['name']
+
+    def participant(team):
+        return picks_map.get(team, '') if team else ''
+
+    def make_match(rid, num, slot_a, slot_b, team_a=None, team_b=None):
+        ta = team_a if team_a is not None else qualifiers.get(slot_a)
+        tb = team_b if team_b is not None else qualifiers.get(slot_b)
+        winner = find_ko_winner(ta, tb, results)
+        return {
+            'id': f'{rid}_{num}',
+            'slot_a': slot_a, 'slot_b': slot_b,
+            'team_a': ta, 'team_b': tb,
+            'winner': winner,
+            'participant_a': participant(ta),
+            'participant_b': participant(tb),
+        }
+
+    r32 = [make_match('r32', i + 1, sa, sb) for i, (sa, sb) in enumerate(R32_MATCHES)]
+
+    r16 = []
+    for i in range(8):
+        pa, pb = r32[i * 2], r32[i * 2 + 1]
+        r16.append(make_match('r16', i + 1, f'W_R32_{i*2+1}', f'W_R32_{i*2+2}',
+                              pa['winner'], pb['winner']))
+
+    qf = []
+    for i in range(4):
+        pa, pb = r16[i * 2], r16[i * 2 + 1]
+        qf.append(make_match('qf', i + 1, f'W_R16_{i*2+1}', f'W_R16_{i*2+2}',
+                             pa['winner'], pb['winner']))
+
+    sf = []
+    for i in range(2):
+        pa, pb = qf[i * 2], qf[i * 2 + 1]
+        sf.append(make_match('sf', i + 1, f'W_QF_{i*2+1}', f'W_QF_{i*2+2}',
+                             pa['winner'], pb['winner']))
+
+    final = make_match('final', 1, 'W_SF_1', 'W_SF_2', sf[0]['winner'], sf[1]['winner'])
+
+    return {
+        'rounds': [
+            {'id': 'r32',   'name': 'Ronda de 32',      'matches': r32},
+            {'id': 'r16',   'name': 'Octavos de Final', 'matches': r16},
+            {'id': 'qf',    'name': 'Cuartos de Final', 'matches': qf},
+            {'id': 'sf',    'name': 'Semifinales',      'matches': sf},
+            {'id': 'final', 'name': 'Final',            'matches': [final]},
+        ],
+        'champion': final['winner'],
+    }
+
 
 def is_finished_match(r: Dict) -> bool:
     """Return True only for officially finished matches.
@@ -378,6 +493,14 @@ def api_standings():
 def api_groups():
     results = load_results()
     return compute_group_standings(results)
+
+
+@app.get('/api/bracket')
+def api_bracket():
+    results = load_results()
+    picks = load_picks()
+    groups_data = compute_group_standings(results)
+    return compute_bracket(results, picks, groups_data)
 
 
 @app.post('/api/result')
