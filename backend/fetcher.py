@@ -200,10 +200,23 @@ async def fetch_from_api(api_url: str, api_key: str = None) -> List[Dict]:
     matches = data.get('matches') if isinstance(data, dict) else None
     if not matches or not isinstance(matches, list):
         return out
+    from datetime import datetime, timezone
+    now_utc = datetime.now(timezone.utc)
+
     for m in matches:
         try:
             raw_status = (m.get('status') or '').strip().upper()
-            # Skip matches not yet played (no score)
+            utc_date = m.get('utcDate') or ''
+
+            # If still TIMED/SCHEDULED but kickoff time has passed, treat as live
+            if raw_status in ('TIMED', 'SCHEDULED') and utc_date:
+                try:
+                    kickoff = datetime.fromisoformat(utc_date.replace('Z', '+00:00'))
+                    if kickoff <= now_utc:
+                        raw_status = 'IN_PLAY'
+                except Exception:
+                    pass
+
             if raw_status in ('SCHEDULED', 'TIMED', 'POSTPONED', 'CANCELLED', ''):
                 continue
             status = _FD_STATUS_MAP.get(raw_status, raw_status) or None
