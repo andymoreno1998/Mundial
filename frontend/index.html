@@ -732,6 +732,10 @@
       animation: blink 1.1s ease infinite;
     }
     @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+    @keyframes spin { from { display:inline-block; transform:rotate(0deg); } to { transform:rotate(360deg); } }
+    #refresh-icon { display:inline-block; font-size:1rem; }
+    #refresh-btn:hover { background:rgba(77,208,225,0.25); }
+    #refresh-btn:disabled { opacity:0.6; cursor:default; }
 
     .rank-change {
       display: inline-flex;
@@ -1050,6 +1054,12 @@
       <div class="hero-extra">
         <div class="mobile-cta">
           <a id="mobile-switch-link" href="#">Abrir versión móvil</a>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <button id="refresh-btn" onclick="triggerRefresh()" style="background:rgba(77,208,225,0.15);border:1px solid rgba(77,208,225,0.4);color:#4dd0e1;padding:6px 14px;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background 0.2s;">
+            <span id="refresh-icon">&#8635;</span> Actualizar
+          </button>
+          <span id="last-update" style="font-size:0.75rem;color:var(--text-muted);"></span>
         </div>
         <div class="top-team-card">
           <strong>TOP 3 equipos con más puntos</strong>
@@ -1756,8 +1766,17 @@
     }
     // ── END BRACKET ────────────────────────────────────────────
 
-    async function loadInitial() {
-      loadEliminated();
+    function setLastUpdate() {
+      const el = document.getElementById('last-update');
+      if (!el) return;
+      const now = new Date();
+      const h = now.getHours().toString().padStart(2, '0');
+      const m = now.getMinutes().toString().padStart(2, '0');
+      const s = now.getSeconds().toString().padStart(2, '0');
+      el.textContent = `Actualizado ${h}:${m}:${s}`;
+    }
+
+    async function loadData() {
       const [picks, standings, results, groups, bracket] = await Promise.all([
         fetch('/api/picks').then(r => r.json()),
         fetch('/api/standings').then(r => r.json()),
@@ -1765,13 +1784,29 @@
         fetch('/api/groups').then(r => r.json()),
         fetch('/api/bracket').then(r => r.json()),
       ]);
-
       renderPicks(picks);
       renderResults(results);
       renderGroups(groups);
       renderParticipantChart(standings);
       renderBracket(bracket);
       updateStats(picks, results);
+      setLastUpdate();
+    }
+
+    async function triggerRefresh() {
+      const btn = document.getElementById('refresh-btn');
+      const icon = document.getElementById('refresh-icon');
+      if (btn) btn.disabled = true;
+      if (icon) icon.style.animation = 'spin 0.7s linear infinite';
+      try { await loadData(); } finally {
+        if (btn) btn.disabled = false;
+        if (icon) icon.style.animation = '';
+      }
+    }
+
+    async function loadInitial() {
+      loadEliminated();
+      await loadData();
     }
 
     const ws = new WebSocket((location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host + '/ws');
@@ -1810,6 +1845,7 @@
     });
 
     loadInitial();
+    setInterval(triggerRefresh, 60000);
   </script>
 </body>
 </html>
