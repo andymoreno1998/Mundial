@@ -1798,7 +1798,10 @@
       const icon = document.getElementById('refresh-icon');
       if (btn) btn.disabled = true;
       if (icon) icon.style.animation = 'spin 0.7s linear infinite';
-      try { await loadData(); } finally {
+      try {
+        await fetch('/api/refresh', { method: 'POST' });
+        await loadData();
+      } finally {
         if (btn) btn.disabled = false;
         if (icon) icon.style.animation = '';
       }

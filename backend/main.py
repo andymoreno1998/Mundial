@@ -536,6 +536,43 @@ async def websocket_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
 
 
+@app.post('/api/refresh')
+async def api_refresh():
+    """Trigger an immediate fetch from the external API and broadcast updates."""
+    cfg_path = BASE / 'backend' / 'config.json'
+    import os
+    try:
+        with open(cfg_path, encoding='utf-8') as f:
+            cfg = _json.load(f)
+    except Exception:
+        cfg = {}
+    if os.environ.get('FOOTBALL_API_KEY'):
+        cfg['api_key'] = os.environ['FOOTBALL_API_KEY']
+    if os.environ.get('FOOTBALL_API_URL'):
+        cfg['api_url'] = os.environ['FOOTBALL_API_URL']
+    if os.environ.get('FOOTBALL_API_MODE'):
+        cfg['mode'] = os.environ['FOOTBALL_API_MODE']
+    if not cfg.get('mode'):
+        cfg['mode'] = 'api'
+    if not cfg.get('api_url'):
+        cfg['api_url'] = 'https://api.football-data.org/v4/competitions/WC/matches'
+    try:
+        added = await fetcher.fetch_and_update(cfg)
+        picks = load_picks()
+        results = load_results()
+        standings = compute_standings(picks, results)
+        groups = compute_group_standings(results)
+        if added:
+            try:
+                update_eliminated_if_round32(results)
+            except Exception:
+                pass
+            asyncio.create_task(manager.broadcast({'type': 'update', 'results': results, 'standings': standings, 'groups': groups, 'eliminatedTeams': load_eliminated()}))
+        return {'ok': True, 'added': added, 'total': len(results)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get('/', response_class=FileResponse)
 def root():
     return FRONTEND_DIR / 'index.html'
