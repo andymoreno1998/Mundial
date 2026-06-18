@@ -1444,6 +1444,10 @@
         return;
       }
 
+      const picks = window.currentPicks || [];
+      const teamToParticipant = {};
+      picks.forEach(p => (p.teams || []).forEach(t => { teamToParticipant[t] = p.name; }));
+
       const allTeams = groups.flatMap(group => group.standings.map(team => ({
         team: team.team,
         points: team.points,
@@ -1469,9 +1473,13 @@
             changeHTML = `<span class="rank-change down">▼ ${index - prevIndex}</span>`;
           }
         }
+        const participant = teamToParticipant[team.team];
+        const participantHTML = participant
+          ? `<span style="font-size:0.72rem;color:var(--text-muted);font-weight:400;margin-left:4px;">(${participant})</span>`
+          : '';
         return `
           <div class="top-team-item">
-            <strong>${medals[index]} ${renderFlagTag(team.team)}${changeHTML}</strong>
+            <strong>${medals[index]} ${renderFlagTag(team.team)}${participantHTML}${changeHTML}</strong>
             <span class="top-team-badge">${team.points} pts</span>
           </div>
         `;
