@@ -1558,7 +1558,8 @@
       if (cardsContainer) {
         cardsContainer.innerHTML = picks.map(p => {
           const teams = (p.teams || []).slice(0, 4).map(team => {
-            return `<div class="picks-card-team">${renderFlagTag(team)}</div>`;
+            const clsClass = isClassified(team) ? 'classify-btn classified' : 'classify-btn';
+            return `<div class="picks-card-team">${renderFlagTag(team)}<button class="${clsClass}" data-team="${team}" title="Clasificado R32">✓</button></div>`;
           }).join('');
           return `
             <div class="picks-card">
@@ -1898,6 +1899,12 @@
     });
 
     document.getElementById('picks').addEventListener('click', e => {
+      const btn = e.target.closest('.classify-btn');
+      if (!btn) return;
+      toggleClassified(btn.dataset.team);
+    });
+
+    document.getElementById('picks-cards').addEventListener('click', e => {
       const btn = e.target.closest('.classify-btn');
       if (!btn) return;
       toggleClassified(btn.dataset.team);
