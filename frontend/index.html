@@ -553,6 +553,31 @@
       color: var(--text-muted);
     }
 
+    .classify-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: rgba(108,230,182,0.25);
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+      margin-left: 2px;
+      vertical-align: middle;
+      transition: color 0.15s, background 0.15s;
+      line-height: 1;
+    }
+    .classify-btn:hover { color: rgba(108,230,182,0.7); }
+    .classify-btn.classified {
+      color: #6ce6b6;
+      background: rgba(108,230,182,0.15);
+    }
+
     .pill {
       display: inline-flex;
       align-items: center;
@@ -1226,6 +1251,7 @@
     };
 
     let eliminatedMap = {};
+    let classifiedMap = {};
     let teamData = [];
     let currentSort = { key: 'points', direction: 'desc' };
     let prevTop3 = [];
@@ -1283,6 +1309,29 @@
       if (!team) return;
       eliminatedMap[team] = !eliminatedMap[team];
       saveEliminated();
+      renderPicks(window.currentPicks || []);
+    }
+
+    function loadClassified() {
+      try {
+        const stored = localStorage.getItem('classifiedTeams');
+        const items = stored ? JSON.parse(stored) : [];
+        classifiedMap = {};
+        if (Array.isArray(items)) items.forEach(t => { classifiedMap[t] = true; });
+      } catch { classifiedMap = {}; }
+    }
+
+    function saveClassified() {
+      const items = Object.keys(classifiedMap).filter(t => classifiedMap[t]);
+      localStorage.setItem('classifiedTeams', JSON.stringify(items));
+    }
+
+    function isClassified(team) { return !!classifiedMap[team]; }
+
+    function toggleClassified(team) {
+      if (!team) return;
+      classifiedMap[team] = !classifiedMap[team];
+      saveClassified();
       renderPicks(window.currentPicks || []);
     }
 
@@ -1495,7 +1544,8 @@
       tbody.innerHTML = picks.map(p => {
         const items = (p.teams || []).slice(0, 4).map(team => {
           const labelClass = isEliminated(team) ? 'team-label eliminated' : 'team-label';
-          return `<td><span class="${labelClass}" role="button" tabindex="0" data-team="${team}">${renderFlagTag(team)}</span></td>`;
+          const clsClass = isClassified(team) ? 'classify-btn classified' : 'classify-btn';
+          return `<td><span class="${labelClass}" role="button" tabindex="0" data-team="${team}">${renderFlagTag(team)}</span><button class="${clsClass}" data-team="${team}" title="Clasificado R32">✓</button></td>`;
         }).join('');
         return `
           <tr>
@@ -1817,6 +1867,7 @@
 
     async function loadInitial() {
       loadEliminated();
+      loadClassified();
       await loadData();
     }
 
@@ -1840,10 +1891,16 @@
 
     // allow clicking on team names to toggle elimination (local UI state)
     document.getElementById('picks').addEventListener('click', e => {
+      if (e.target.closest('.classify-btn')) return; // handled separately
       const el = e.target.closest('.team-label');
       if (!el) return;
-      const team = el.dataset.team;
-      toggleEliminated(team);
+      toggleEliminated(el.dataset.team);
+    });
+
+    document.getElementById('picks').addEventListener('click', e => {
+      const btn = e.target.closest('.classify-btn');
+      if (!btn) return;
+      toggleClassified(btn.dataset.team);
     });
 
     document.getElementById('picks').addEventListener('keydown', e => {
