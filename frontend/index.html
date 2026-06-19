@@ -355,6 +355,15 @@
       gap: 8px;
       flex-wrap: wrap;
     }
+    .picks-card-team.eliminated {
+      opacity: 0.4;
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+    .picks-card-team.classified {
+      border-left: 3px solid #6ce6b6;
+      padding-left: 6px;
+    }
 
     .mobile-version #picks {
       display: none;
@@ -1559,7 +1568,8 @@
         cardsContainer.innerHTML = picks.map(p => {
           const teams = (p.teams || []).slice(0, 4).map(team => {
             const clsClass = isClassified(team) ? 'classify-btn classified' : 'classify-btn';
-            return `<div class="picks-card-team">${renderFlagTag(team)}<button class="${clsClass}" data-team="${team}" title="Clasificado R32">✓</button></div>`;
+            const cardTeamClass = ['picks-card-team', isEliminated(team) ? 'eliminated' : '', isClassified(team) ? 'classified' : ''].filter(Boolean).join(' ');
+            return `<div class="${cardTeamClass}">${renderFlagTag(team)}<button class="${clsClass}" data-team="${team}" title="Clasificado R32">✓</button></div>`;
           }).join('');
           return `
             <div class="picks-card">
