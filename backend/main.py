@@ -226,10 +226,13 @@ def compute_qualifiers(groups_data: list) -> dict:
     qualifiers: Dict[str, str] = {}
     thirds = []
 
+    all_groups_complete = True
     for letter in GROUPS:
         gname = f'Group {letter}'
         standings = group_map.get(gname, [])
         complete = len(standings) >= 4 and all(t.get('played', 0) >= 3 for t in standings[:4])
+        if not complete:
+            all_groups_complete = False
 
         qualifiers[f'W_{letter}'] = standings[0]['team'] if complete and len(standings) >= 1 else None
         qualifiers[f'R_{letter}'] = standings[1]['team'] if complete and len(standings) >= 2 else None
@@ -238,9 +241,15 @@ def compute_qualifiers(groups_data: list) -> dict:
             t = standings[2]
             thirds.append({'team': t['team'], 'points': t['points'], 'gd': t['gd'], 'gf': t['gf']})
 
-    thirds.sort(key=lambda x: (-x['points'], -x['gd'], -x['gf']))
-    for i in range(8):
-        qualifiers[f'T{i+1}'] = thirds[i]['team'] if i < len(thirds) else None
+    # Only assign T-slots when ALL 12 groups are done — until then we can't
+    # know which 8 third-place teams actually qualify.
+    if all_groups_complete:
+        thirds.sort(key=lambda x: (-x['points'], -x['gd'], -x['gf']))
+        for i in range(8):
+            qualifiers[f'T{i+1}'] = thirds[i]['team'] if i < len(thirds) else None
+    else:
+        for i in range(8):
+            qualifiers[f'T{i+1}'] = None
 
     return qualifiers
 
