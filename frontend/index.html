@@ -988,7 +988,7 @@
       flex-direction: column;
       justify-content: center;
       padding: 5px 8px;
-      height: 35px;
+      min-height: 44px;
       border-bottom: 1px solid rgba(255,255,255,0.06);
     }
 
@@ -1016,10 +1016,10 @@
       font-size: 0.64rem;
       color: var(--text-muted);
       padding-left: 23px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.2;
+      white-space: normal;
+      word-break: break-word;
+      line-height: 1.3;
+      margin-top: 2px;
     }
 
     /* Mobile bracket */
@@ -1665,7 +1665,7 @@
     // ── BRACKET ────────────────────────────────────────────────
     const B_TEAM_H  = 35;
     const B_MATCH_H = B_TEAM_H * 2;   // 70px card
-    const B_COL_W   = 176;
+    const B_COL_W   = 200;
     const B_GAP_W   = 32;              // gap between columns = space for SVG lines
     const B_TITLE_H = 28;
     const B_ROWS    = 16;

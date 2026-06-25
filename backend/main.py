@@ -250,6 +250,9 @@ def find_ko_winner(team_a: str, team_b: str, results: list) -> str:
         return None
     na, nb = normalize_team_name(team_a), normalize_team_name(team_b)
     for r in results:
+        # skip group stage matches — they have a 'group' field
+        if r.get('group'):
+            continue
         ra = normalize_team_name(r.get('team_a', ''))
         rb = normalize_team_name(r.get('team_b', ''))
         if (ra == na and rb == nb) or (ra == nb and rb == na):
