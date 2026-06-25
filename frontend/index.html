@@ -1663,14 +1663,14 @@
     }
 
     // ── BRACKET ────────────────────────────────────────────────
-    const B_TEAM_H  = 35;
-    const B_MATCH_H = B_TEAM_H * 2;   // 70px card
+    const B_TEAM_H  = 44;              // matches CSS min-height of bracket-team-slot
+    const B_MATCH_H = B_TEAM_H * 2;   // 88px card
     const B_COL_W   = 200;
-    const B_GAP_W   = 32;              // gap between columns = space for SVG lines
+    const B_GAP_W   = 40;              // gap between columns = space for SVG lines
     const B_TITLE_H = 28;
     const B_ROWS    = 16;
-    const B_SLOT_H  = 80;             // slot height for R32
-    const B_TOTAL_H = B_ROWS * B_SLOT_H; // 1280px
+    const B_SLOT_H  = 104;             // card (88px) + 16px breathing room
+    const B_TOTAL_H = B_ROWS * B_SLOT_H; // 1664px
 
     function bFlag(team) {
       const url = getFlagUrl(team || '');
@@ -1728,7 +1728,7 @@
         round.matches.forEach((match, mi) => {
           const row = document.createElement('div');
           row.className = 'bracket-slot-row';
-          row.style.height = slotH + 'px';
+          row.style.cssText = `height:${slotH}px;padding-top:8px;padding-bottom:8px;box-sizing:border-box;`;
 
           const card = document.createElement('div');
           card.className = 'bracket-match';
