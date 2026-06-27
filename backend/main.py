@@ -211,22 +211,22 @@ GROUPS = list('ABCDEFGHIJKL')
 # Confirmados con la API: posiciones 0,2,3,6,8,9
 # W_X=ganador grupo X, R_X=subcampeón grupo X, T{n}=n-ésimo mejor 3ro
 R32_MATCHES = [
-    ('W_E', 'R_H'),   # 537415 Jun29: Alemania vs Cabo Verde
-    ('W_H', 'T1'),    # 537416 Jun30: España vs 1er mejor 3ro
+    ('W_E', '3rd_D'), # 537415 Jun29: Alemania vs Paraguay ✓
+    ('W_H', 'T1'),    # 537416 Jun30: España vs mejor 3ro
     ('R_A', 'R_B'),   # 537417 Jun28: Sudáfrica vs Canadá ✓
     ('W_F', 'R_C'),   # 537418 Jun30: Países Bajos vs Marruecos ✓
     ('R_I', 'R_J'),   # 537419 Jul02: Noruega vs subcampeón G-J
     ('W_G', 'T2'),    # 537420 Jul02: Bélgica/Egipto vs 2o mejor 3ro
-    ('W_D', 'T3'),    # 537421 Jul02: USA vs Bosnia (3ro) ✓
+    ('W_D', '3rd_B'), # 537421 Jul02: USA vs Bosnia ✓
     ('W_K', 'R_G'),   # 537422 Jul01: Colombia vs subcampeón G-G
     ('W_C', 'R_F'),   # 537423 Jun29: Brasil vs Japón ✓
     ('R_E', 'W_I'),   # 537424 Jun30: Costa de Marfil vs Francia ✓
-    ('W_A', 'T4'),    # 537425 Jul01: México vs 4o mejor 3ro
+    ('W_A', 'T4'),    # 537425 Jul01: México vs mejor 3ro
     ('R_K', 'R_L'),   # 537426 Jul01: subcampeón G-K vs subcampeón G-L
-    ('W_J', 'T5'),    # 537427 Jul03: Argentina vs 5o mejor 3ro
-    ('R_D', 'T6'),    # 537428 Jul03: Australia vs 6o mejor 3ro
-    ('W_B', 'T7'),    # 537429 Jul03: Suiza vs 7o mejor 3ro
-    ('W_L', 'T8'),    # 537430 Jul04: ganador G-L vs 8o mejor 3ro
+    ('W_J', 'R_H'),   # 537427 Jul03: Argentina vs Cabo Verde ✓
+    ('R_D', 'T6'),    # 537428 Jul03: Australia vs 3ro
+    ('W_B', 'T7'),    # 537429 Jul03: Suiza vs 3ro
+    ('W_L', 'T8'),    # 537430 Jul04: ganador G-L vs 3ro
 ]
 
 
@@ -245,6 +245,8 @@ def compute_qualifiers(groups_data: list) -> dict:
 
         qualifiers[f'W_{letter}'] = standings[0]['team'] if complete and len(standings) >= 1 else None
         qualifiers[f'R_{letter}'] = standings[1]['team'] if complete and len(standings) >= 2 else None
+        # 3rd_X = specific third-place team from group X (for known bracket assignments)
+        qualifiers[f'3rd_{letter}'] = standings[2]['team'] if complete and len(standings) >= 3 else None
 
         if complete and len(standings) >= 3:
             t = standings[2]
