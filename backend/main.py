@@ -215,18 +215,18 @@ R32_MATCHES = [
     ('W_H', 'T1'),    # 537416 Jun30: España vs mejor 3ro
     ('R_A', 'R_B'),   # 537417 Jun28: Sudáfrica vs Canadá ✓
     ('W_F', 'R_C'),   # 537418 Jun30: Países Bajos vs Marruecos ✓
-    ('R_I', 'R_J'),   # 537419 Jul02: Noruega vs subcampeón G-J
-    ('W_G', 'T2'),    # 537420 Jul02: Bélgica/Egipto vs 2o mejor 3ro
+    ('R_J', 'T2'),    # 537419 Jul02: subcampeón G-J vs 3ro
+    ('T3', 'T4'),     # 537420 Jul02: ? vs ?
     ('W_D', '3rd_B'), # 537421 Jul02: USA vs Bosnia ✓
-    ('W_K', 'R_G'),   # 537422 Jul01: Colombia vs subcampeón G-G
+    ('W_K', 'R_G'),   # 537422 Jul01: Colombia vs Bélgica
     ('W_C', 'R_F'),   # 537423 Jun29: Brasil vs Japón ✓
-    ('R_E', 'W_I'),   # 537424 Jun30: Costa de Marfil vs Francia ✓
-    ('W_A', 'T4'),    # 537425 Jul01: México vs mejor 3ro
-    ('R_K', 'R_L'),   # 537426 Jul01: subcampeón G-K vs subcampeón G-L
+    ('R_I', 'R_E'),   # 537424 Jun30: Noruega vs Costa de Marfil ✓
+    ('W_A', 'T5'),    # 537425 Jul01: México vs ?
+    ('W_I', '3rd_F'), # 537426 Jul01: Francia vs Suecia ✓
     ('W_J', 'R_H'),   # 537427 Jul03: Argentina vs Cabo Verde ✓
-    ('R_D', 'T6'),    # 537428 Jul03: Australia vs 3ro
-    ('W_B', 'T7'),    # 537429 Jul03: Suiza vs 3ro
-    ('W_L', 'T8'),    # 537430 Jul04: ganador G-L vs 3ro
+    ('R_D', 'W_G'),   # 537428 Jul03: Australia vs Egipto ✓
+    ('W_B', 'T7'),    # 537429 Jul03: Suiza vs ?
+    ('W_L', 'T8'),    # 537430 Jul04: ganador G-L vs ?
 ]
 
 
