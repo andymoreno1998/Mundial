@@ -207,17 +207,26 @@ _FINISHED_STATUSES = {'FT', 'FINISHED', 'FINAL', 'COMPLETED', 'FT_PEN', 'AET'}
 # ── BRACKET ──────────────────────────────────────────────────────────────────
 GROUPS = list('ABCDEFGHIJKL')
 
-# Round of 32: 16 matches.  Slot codes: W_X = winner group X,
-# R_X = runner-up group X,  T{n} = n-th best third-place team.
+# Round of 32 — orden real del bracket FIFA 2026 (por ID de partido en football-data.org)
+# Confirmados con la API: posiciones 0,2,3,6,8,9
+# W_X=ganador grupo X, R_X=subcampeón grupo X, T{n}=n-ésimo mejor 3ro
 R32_MATCHES = [
-    ('W_A', 'T1'),  ('W_B', 'T2'),
-    ('W_C', 'T3'),  ('W_D', 'T4'),
-    ('W_E', 'T5'),  ('R_A', 'R_B'),
-    ('W_F', 'T6'),  ('R_C', 'R_D'),
-    ('W_G', 'T7'),  ('W_H', 'T8'),
-    ('W_I', 'R_E'), ('W_J', 'R_F'),
-    ('W_K', 'R_G'), ('W_L', 'R_H'),
-    ('R_I', 'R_J'), ('R_K', 'R_L'),
+    ('W_E', 'R_H'),   # 537415 Jun29: Alemania vs Cabo Verde
+    ('W_H', 'T1'),    # 537416 Jun30: España vs 1er mejor 3ro
+    ('R_A', 'R_B'),   # 537417 Jun28: Sudáfrica vs Canadá ✓
+    ('W_F', 'R_C'),   # 537418 Jun30: Países Bajos vs Marruecos ✓
+    ('R_I', 'R_J'),   # 537419 Jul02: Noruega vs subcampeón G-J
+    ('W_G', 'T2'),    # 537420 Jul02: Bélgica/Egipto vs 2o mejor 3ro
+    ('W_D', 'T3'),    # 537421 Jul02: USA vs Bosnia (3ro) ✓
+    ('W_K', 'R_G'),   # 537422 Jul01: Colombia vs subcampeón G-G
+    ('W_C', 'R_F'),   # 537423 Jun29: Brasil vs Japón ✓
+    ('R_E', 'W_I'),   # 537424 Jun30: Costa de Marfil vs Francia ✓
+    ('W_A', 'T4'),    # 537425 Jul01: México vs 4o mejor 3ro
+    ('R_K', 'R_L'),   # 537426 Jul01: subcampeón G-K vs subcampeón G-L
+    ('W_J', 'T5'),    # 537427 Jul03: Argentina vs 5o mejor 3ro
+    ('R_D', 'T6'),    # 537428 Jul03: Australia vs 6o mejor 3ro
+    ('W_B', 'T7'),    # 537429 Jul03: Suiza vs 7o mejor 3ro
+    ('W_L', 'T8'),    # 537430 Jul04: ganador G-L vs 8o mejor 3ro
 ]
 
 
