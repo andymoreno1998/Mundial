@@ -1518,15 +1518,19 @@
       const picksMap = {};
       picks.forEach(p => { picksMap[p.name] = p.teams || []; });
 
+      // Build list with active team count, then sort by count desc (tiebreak: score desc)
+      const participants = standings.map(s => {
+        const teams = picksMap[s.name] || [];
+        const activeTeams = teams.filter(t => isClassified(t) && !isEliminated(t));
+        return { name: s.name, score: s.score, activeTeams, activeCount: activeTeams.length };
+      });
+      participants.sort((a, b) => b.activeCount - a.activeCount || b.score - a.score);
+
       const medals = ['🥇', '🥈', '🥉'];
 
-      container.innerHTML = standings.map((s, idx) => {
-        const teams = picksMap[s.name] || [];
-        // Only show teams that passed to next round (classified) AND not yet eliminated
-        const activeTeams = teams.filter(t => isClassified(t) && !isEliminated(t));
-
-        const flagsHTML = activeTeams.length > 0
-          ? activeTeams.map(t => {
+      container.innerHTML = participants.map((p, idx) => {
+        const flagsHTML = p.activeTeams.length > 0
+          ? p.activeTeams.map(t => {
               const normalized = t ? t.trim() : '';
               let code = TEAM_FLAG_MAP[normalized] || TEAM_FLAG_MAP[normalized.toLowerCase()];
               if (!code) {
@@ -1538,10 +1542,10 @@
             }).join('')
           : `<span style="font-size:0.75rem;color:var(--text-muted);font-style:italic;">sin equipos</span>`;
 
-        const medal = idx < 3 ? medals[idx] : `${idx + 1}°`;
+        const medal = idx < 3 ? medals[idx] : `${idx + 1}.`;
         return `
           <div class="top-team-item">
-            <strong>${medal} ${s.name}</strong>
+            <strong>${medal} ${p.name}</strong>
             <div class="participant-active-teams">${flagsHTML}</div>
           </div>
         `;
