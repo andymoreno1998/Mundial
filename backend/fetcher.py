@@ -219,7 +219,9 @@ async def fetch_from_api(api_url: str, api_key: str = None) -> List[Dict]:
 
             if raw_status in ('SCHEDULED', 'TIMED', 'POSTPONED', 'CANCELLED', ''):
                 continue
-            status = _FD_STATUS_MAP.get(raw_status, raw_status) or None
+            status = _FD_STATUS_MAP.get(raw_status) or None
+            if not status:
+                continue  # skip unknown/unmapped statuses
 
             score = m.get('score') or {}
             ft = score.get('fullTime') or {}

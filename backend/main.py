@@ -142,11 +142,20 @@ def load_picks():
         return json.load(f)
 
 
+_VALID_RESULT_STATUSES = {'FT', 'LIVE', 'HT', 'FINISHED', 'FINAL', 'COMPLETED', 'FT_PEN', 'AET'}
+
+
 def load_results():
     if not RESULTS_FILE.exists():
         return []
     with open(RESULTS_FILE, encoding='utf-8') as f:
-        return json.load(f)
+        results = json.load(f)
+    # Filter out entries with corrupted status (e.g. utcDate stored as status) or missing teams
+    return [
+        r for r in results
+        if r.get('team_a') and r.get('team_b')
+        and (not r.get('status') or r.get('status') in _VALID_RESULT_STATUSES)
+    ]
 
 
 def load_eliminated():
@@ -216,17 +225,17 @@ R32_MATCHES = [
     ('R_A', 'R_B'),   # 537417 Jun28: Sudáfrica vs Canadá ✓
     ('W_F', 'R_C'),   # 537418 Jun30: Países Bajos vs Marruecos ✓
     ('R_K', 'R_L'),   # 537419 Jul02: Portugal vs Croacia ✓
-    ('W_G', 'T1'),    # 537420 Jul02: Bélgica vs mejor 3ro no asignado
+    ('W_G', '3rd_I'), # 537420 Jul02: Bélgica vs Senegal ✓
     ('W_D', '3rd_B'), # 537421 Jul02: USA vs Bosnia ✓
     ('W_K', '3rd_L'), # 537422 Jul01: Colombia vs Ghana ✓
     ('W_C', 'R_F'),   # 537423 Jun29: Brasil vs Japón ✓
     ('R_I', 'R_E'),   # 537424 Jun30: Noruega vs Costa de Marfil ✓
-    ('W_A', 'T2'),    # 537425 Jul01: México vs 2do mejor 3ro
+    ('W_A', 'T1'),    # 537425 Jul01: México vs mejor 3ro restante
     ('W_I', '3rd_F'), # 537426 Jul01: Francia vs Suecia ✓
     ('W_J', 'R_H'),   # 537427 Jul03: Argentina vs Cabo Verde ✓
     ('R_D', 'R_G'),   # 537428 Jul03: Australia vs Egipto ✓
-    ('W_B', 'T3'),    # 537429 Jul03: Suiza vs 3er mejor 3ro
-    ('W_L', 'T4'),    # 537430 Jul04: Inglaterra vs 4to mejor 3ro
+    ('W_B', 'T2'),    # 537429 Jul03: Suiza vs 2do mejor 3ro restante
+    ('W_L', '3rd_K'), # 537430 Jul04: Inglaterra vs R. Congo ✓
 ]
 
 

@@ -1522,7 +1522,8 @@
 
       container.innerHTML = standings.map((s, idx) => {
         const teams = picksMap[s.name] || [];
-        const activeTeams = teams.filter(t => !isEliminated(t));
+        // Only show teams that passed to next round (classified) AND not yet eliminated
+        const activeTeams = teams.filter(t => isClassified(t) && !isEliminated(t));
 
         const flagsHTML = activeTeams.length > 0
           ? activeTeams.map(t => {
@@ -1535,15 +1536,12 @@
               if (!code) return `<span title="${t}" style="font-size:0.75rem;opacity:0.6;">${normalized.substring(0,3)}</span>`;
               return `<img class="flag-icon" src="https://flagcdn.com/w20/${code}.png" alt="${t}" width="20" height="14" title="${t}" loading="lazy"/>`;
             }).join('')
-          : `<span style="font-size:0.75rem;color:var(--text-muted);font-style:italic;">todos eliminados</span>`;
+          : `<span style="font-size:0.75rem;color:var(--text-muted);font-style:italic;">sin equipos</span>`;
 
         const medal = idx < 3 ? medals[idx] : `${idx + 1}°`;
         return `
           <div class="top-team-item">
-            <div class="top-team-header">
-              <strong>${medal} ${s.name}</strong>
-              <span class="top-team-badge">${s.score} pts</span>
-            </div>
+            <strong>${medal} ${s.name}</strong>
             <div class="participant-active-teams">${flagsHTML}</div>
           </div>
         `;
@@ -1594,9 +1592,11 @@
       if (s === 'HT') {
         return '<span class="status-badge ht">Medio Tiempo</span>';
       }
-      // live time like "67'" or "LIVE"
-      const label = s === 'LIVE' ? 'En Juego' : `En Juego ${status}`;
-      return `<span class="status-badge live"><span class="live-dot"></span>${label}</span>`;
+      if (s === 'LIVE') {
+        return '<span class="status-badge live"><span class="live-dot"></span>En Juego</span>';
+      }
+      // Unknown status (e.g. corrupted datetime) — show nothing
+      return '';
     }
 
     function renderResults(results) {
