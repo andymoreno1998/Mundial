@@ -212,21 +212,21 @@ GROUPS = list('ABCDEFGHIJKL')
 # W_X=ganador grupo X, R_X=subcampeón grupo X, T{n}=n-ésimo mejor 3ro
 R32_MATCHES = [
     ('W_E', '3rd_D'), # 537415 Jun29: Alemania vs Paraguay ✓
-    ('W_H', 'T1'),    # 537416 Jun30: España vs mejor 3ro
+    ('W_H', 'R_J'),   # 537416 Jun30: España vs Austria ✓
     ('R_A', 'R_B'),   # 537417 Jun28: Sudáfrica vs Canadá ✓
     ('W_F', 'R_C'),   # 537418 Jun30: Países Bajos vs Marruecos ✓
-    ('R_J', 'T2'),    # 537419 Jul02: subcampeón G-J vs 3ro
-    ('T3', 'T4'),     # 537420 Jul02: ? vs ?
+    ('R_K', 'R_L'),   # 537419 Jul02: Portugal vs Croacia ✓
+    ('W_G', 'T1'),    # 537420 Jul02: Bélgica vs mejor 3ro no asignado
     ('W_D', '3rd_B'), # 537421 Jul02: USA vs Bosnia ✓
-    ('W_K', 'R_G'),   # 537422 Jul01: Colombia vs Bélgica
+    ('W_K', '3rd_L'), # 537422 Jul01: Colombia vs Ghana ✓
     ('W_C', 'R_F'),   # 537423 Jun29: Brasil vs Japón ✓
     ('R_I', 'R_E'),   # 537424 Jun30: Noruega vs Costa de Marfil ✓
-    ('W_A', 'T5'),    # 537425 Jul01: México vs ?
+    ('W_A', 'T2'),    # 537425 Jul01: México vs 2do mejor 3ro
     ('W_I', '3rd_F'), # 537426 Jul01: Francia vs Suecia ✓
     ('W_J', 'R_H'),   # 537427 Jul03: Argentina vs Cabo Verde ✓
-    ('R_D', 'W_G'),   # 537428 Jul03: Australia vs Egipto ✓
-    ('W_B', 'T7'),    # 537429 Jul03: Suiza vs ?
-    ('W_L', 'T8'),    # 537430 Jul04: ganador G-L vs ?
+    ('R_D', 'R_G'),   # 537428 Jul03: Australia vs Egipto ✓
+    ('W_B', 'T3'),    # 537429 Jul03: Suiza vs 3er mejor 3ro
+    ('W_L', 'T4'),    # 537430 Jul04: Inglaterra vs 4to mejor 3ro
 ]
 
 
@@ -234,6 +234,9 @@ def compute_qualifiers(groups_data: list) -> dict:
     group_map = {g['group']: g['standings'] for g in groups_data}
     qualifiers: Dict[str, str] = {}
     thirds = []
+
+    # Groups whose 3rd-place team is already assigned to a specific bracket slot
+    specific_3rd_groups = {slot[4:] for home, away in R32_MATCHES for slot in (home, away) if slot.startswith('3rd_')}
 
     all_groups_complete = True
     for letter in GROUPS:
@@ -250,14 +253,16 @@ def compute_qualifiers(groups_data: list) -> dict:
 
         if complete and len(standings) >= 3:
             t = standings[2]
-            thirds.append({'team': t['team'], 'points': t['points'], 'gd': t['gd'], 'gf': t['gf']})
+            thirds.append({'group': letter, 'team': t['team'], 'points': t['points'], 'gd': t['gd'], 'gf': t['gf']})
 
     # Only assign T-slots when ALL 12 groups are done — until then we can't
     # know which 8 third-place teams actually qualify.
+    # Exclude groups already assigned via specific 3rd_X codes so teams don't appear twice.
     if all_groups_complete:
-        thirds.sort(key=lambda x: (-x['points'], -x['gd'], -x['gf']))
+        generic_thirds = [t for t in thirds if t['group'] not in specific_3rd_groups]
+        generic_thirds.sort(key=lambda x: (-x['points'], -x['gd'], -x['gf']))
         for i in range(8):
-            qualifiers[f'T{i+1}'] = thirds[i]['team'] if i < len(thirds) else None
+            qualifiers[f'T{i+1}'] = generic_thirds[i]['team'] if i < len(generic_thirds) else None
     else:
         for i in range(8):
             qualifiers[f'T{i+1}'] = None

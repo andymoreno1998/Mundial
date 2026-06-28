@@ -189,12 +189,19 @@
 
     .top-team-item {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
+      gap: 6px;
       padding: 12px 14px;
       border-radius: 16px;
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .top-team-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
     }
 
     .top-team-item strong {
@@ -205,6 +212,15 @@
     .top-team-badge {
       color: var(--text-muted);
       font-size: 0.9rem;
+      white-space: nowrap;
+    }
+
+    .participant-active-teams {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      min-height: 18px;
     }
 
     .leader-card {
@@ -893,13 +909,7 @@
       }
 
       .top-team-item {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-      }
-
-      .top-team-item strong {
-        font-size: 0.95rem;
+        gap: 4px;
       }
 
       .top-team-badge {
@@ -1096,7 +1106,7 @@
           <span id="last-update" style="font-size:0.75rem;color:var(--text-muted);"></span>
         </div>
         <div class="top-team-card">
-          <strong>TOP 3 equipos con más puntos</strong>
+          <strong>Clasificación</strong>
           <div id="top-teams" class="top-teams-list">Cargando...</div>
         </div>
       </div>
@@ -1263,7 +1273,6 @@
     let classifiedMap = {};
     let teamData = [];
     let currentSort = { key: 'points', direction: 'desc' };
-    let prevTop3 = [];
 
     function loadEliminated() {
       try {
@@ -1319,6 +1328,7 @@
       eliminatedMap[team] = !eliminatedMap[team];
       saveEliminated();
       renderPicks(window.currentPicks || []);
+      renderParticipantSummary();
     }
 
     function loadClassified() {
@@ -1446,7 +1456,6 @@
     }
 
     function renderGroups(groups) {
-      renderTopTeams(groups);
       const container = document.getElementById('groups');
       if (!groups || groups.length === 0) {
         container.innerHTML = '<div class="chart-row"><div class="chart-meta"><strong>No hay datos de grupos disponibles</strong></div></div>';
@@ -1495,55 +1504,50 @@
       }).join('');
     }
 
-    function renderTopTeams(groups) {
+    function renderParticipantSummary() {
       const container = document.getElementById('top-teams');
-      if (!groups || groups.length === 0) {
-        container.innerHTML = '<div>No hay datos de equipos aún.</div>';
+      if (!container) return;
+      const standings = window.currentStandings || [];
+      const picks = window.currentPicks || [];
+
+      if (!standings.length) {
+        container.innerHTML = '<div style="color:var(--text-muted);font-size:0.9rem;">No hay datos aún.</div>';
         return;
       }
 
-      const picks = window.currentPicks || [];
-      const teamToParticipant = {};
-      picks.forEach(p => (p.teams || []).forEach(t => { teamToParticipant[t] = p.name; }));
-
-      const allTeams = groups.flatMap(group => group.standings.map(team => ({
-        team: team.team,
-        points: team.points,
-        gd: team.gd,
-        gf: team.gf
-      })));
-
-      const topTeams = allTeams
-        .sort((a, b) => b.points - a.points || b.gd - a.gd || b.gf - a.gf || a.team.localeCompare(b.team, 'es'))
-        .slice(0, 3);
+      const picksMap = {};
+      picks.forEach(p => { picksMap[p.name] = p.teams || []; });
 
       const medals = ['🥇', '🥈', '🥉'];
 
-      container.innerHTML = topTeams.map((team, index) => {
-        const prevIndex = prevTop3.findIndex(t => t.team === team.team);
-        let changeHTML = '';
-        if (prevTop3.length > 0) {
-          if (prevIndex === -1) {
-            changeHTML = '<span class="rank-change new">NUEVO</span>';
-          } else if (prevIndex > index) {
-            changeHTML = `<span class="rank-change up">▲ ${prevIndex - index}</span>`;
-          } else if (prevIndex < index) {
-            changeHTML = `<span class="rank-change down">▼ ${index - prevIndex}</span>`;
-          }
-        }
-        const participant = teamToParticipant[team.team];
-        const participantHTML = participant
-          ? `<span style="font-size:0.72rem;color:var(--text-muted);font-weight:400;margin-left:4px;">(${participant})</span>`
-          : '';
+      container.innerHTML = standings.map((s, idx) => {
+        const teams = picksMap[s.name] || [];
+        const activeTeams = teams.filter(t => !isEliminated(t));
+
+        const flagsHTML = activeTeams.length > 0
+          ? activeTeams.map(t => {
+              const normalized = t ? t.trim() : '';
+              let code = TEAM_FLAG_MAP[normalized] || TEAM_FLAG_MAP[normalized.toLowerCase()];
+              if (!code) {
+                const key = Object.keys(TEAM_FLAG_MAP).find(k => k.toLowerCase() === normalized.toLowerCase());
+                code = key ? TEAM_FLAG_MAP[key] : null;
+              }
+              if (!code) return `<span title="${t}" style="font-size:0.75rem;opacity:0.6;">${normalized.substring(0,3)}</span>`;
+              return `<img class="flag-icon" src="https://flagcdn.com/w20/${code}.png" alt="${t}" width="20" height="14" title="${t}" loading="lazy"/>`;
+            }).join('')
+          : `<span style="font-size:0.75rem;color:var(--text-muted);font-style:italic;">todos eliminados</span>`;
+
+        const medal = idx < 3 ? medals[idx] : `${idx + 1}°`;
         return `
           <div class="top-team-item">
-            <strong>${medals[index]} ${renderFlagTag(team.team)}${participantHTML}${changeHTML}</strong>
-            <span class="top-team-badge">${team.points} pts</span>
+            <div class="top-team-header">
+              <strong>${medal} ${s.name}</strong>
+              <span class="top-team-badge">${s.score} pts</span>
+            </div>
+            <div class="participant-active-teams">${flagsHTML}</div>
           </div>
         `;
       }).join('');
-
-      prevTop3 = topTeams.map(t => ({ ...t }));
     }
 
     function renderPicks(picks) {
@@ -1853,7 +1857,9 @@
         fetch('/api/groups').then(r => r.json()),
         fetch('/api/bracket').then(r => r.json()),
       ]);
+      window.currentStandings = standings;
       renderPicks(picks);
+      renderParticipantSummary();
       renderResults(results);
       renderGroups(groups);
       renderParticipantChart(standings);
@@ -1895,7 +1901,8 @@
         }
         const currentPicks = window.currentPicks || [];
         renderParticipantChart(payload.standings || []);
-        renderTopTeams(payload.groups || []);
+        window.currentStandings = payload.standings || window.currentStandings || [];
+        renderParticipantSummary();
         updateStats({ length: payload.picks_count || currentPicks.length }, payload.results || []);
       }
     });
