@@ -578,30 +578,6 @@
       color: var(--text-muted);
     }
 
-    .classify-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      border: none;
-      background: transparent;
-      color: rgba(108,230,182,0.25);
-      font-size: 0.7rem;
-      font-weight: 700;
-      cursor: pointer;
-      padding: 0;
-      margin-left: 2px;
-      vertical-align: middle;
-      transition: color 0.15s, background 0.15s;
-      line-height: 1;
-    }
-    .classify-btn:hover { color: rgba(108,230,182,0.7); }
-    .classify-btn.classified {
-      color: #6ce6b6;
-      background: rgba(108,230,182,0.15);
-    }
 
     .pill {
       display: inline-flex;
@@ -1269,34 +1245,45 @@
       'Alemania':'#000000','Bélgica':'#ffd900','Cabo Verde':'#3f90a7','Marruecos':'#c1272d','Suiza':'#dc2f2f'
     };
 
-    let eliminatedMap = {};
-    let classifiedMap = {};
     let teamData = [];
     let currentSort = { key: 'points', direction: 'desc' };
 
-    function loadEliminated() {
-      try {
-        const stored = localStorage.getItem('eliminatedTeams');
-        const items = stored ? JSON.parse(stored) : [];
-        eliminatedMap = {};
-        if (Array.isArray(items)) {
-          items.forEach(team => { eliminatedMap[team] = true; });
-        }
-        return items;
-      } catch (error) {
-        eliminatedMap = {};
-        return [];
-      }
-    }
+    // Auto-compute qualified (R32 teams) and eliminated from bracket + groups data
+    function computeAutoStatus(groups, bracket) {
+      const allGroupTeams = new Set();
+      (groups || []).forEach(g => {
+        (g.standings || []).forEach(t => { if (t.team) allGroupTeams.add(t.team); });
+      });
 
-    function saveEliminated() {
-      const items = Object.keys(eliminatedMap).filter(team => eliminatedMap[team]);
-      localStorage.setItem('eliminatedTeams', JSON.stringify(items));
-      renderPicks(window.currentPicks || []);
+      const qualified = new Set();
+      const eliminated = new Set();
+
+      if (bracket && bracket.rounds) {
+        const r32 = bracket.rounds.find(r => r.id === 'r32');
+        if (r32) r32.matches.forEach(m => {
+          if (m.team_a) qualified.add(m.team_a);
+          if (m.team_b) qualified.add(m.team_b);
+        });
+        bracket.rounds.forEach(round => round.matches.forEach(m => {
+          if (m.winner && m.team_a && m.team_b) {
+            eliminated.add(m.winner === m.team_a ? m.team_b : m.team_a);
+          }
+        }));
+      }
+
+      // Group-stage losers = all group teams not in R32
+      allGroupTeams.forEach(t => { if (!qualified.has(t)) eliminated.add(t); });
+
+      window.autoQualified = qualified;
+      window.autoEliminated = eliminated;
     }
 
     function isEliminated(team) {
-      return !!eliminatedMap[team];
+      return !!(window.autoEliminated && window.autoEliminated.has(team));
+    }
+
+    function isClassified(team) {
+      return !!(window.autoQualified && window.autoQualified.has(team));
     }
 
     function renderLeaderboard(standings) {
@@ -1323,36 +1310,6 @@
       }).join('');
     }
 
-    function toggleEliminated(team) {
-      if (!team) return;
-      eliminatedMap[team] = !eliminatedMap[team];
-      saveEliminated();
-      renderPicks(window.currentPicks || []);
-      renderParticipantSummary();
-    }
-
-    function loadClassified() {
-      try {
-        const stored = localStorage.getItem('classifiedTeams');
-        const items = stored ? JSON.parse(stored) : [];
-        classifiedMap = {};
-        if (Array.isArray(items)) items.forEach(t => { classifiedMap[t] = true; });
-      } catch { classifiedMap = {}; }
-    }
-
-    function saveClassified() {
-      const items = Object.keys(classifiedMap).filter(t => classifiedMap[t]);
-      localStorage.setItem('classifiedTeams', JSON.stringify(items));
-    }
-
-    function isClassified(team) { return !!classifiedMap[team]; }
-
-    function toggleClassified(team) {
-      if (!team) return;
-      classifiedMap[team] = !classifiedMap[team];
-      saveClassified();
-      renderPicks(window.currentPicks || []);
-    }
 
     function getFlagUrl(team) {
       if (!team) return '';
@@ -1559,8 +1516,7 @@
       tbody.innerHTML = picks.map(p => {
         const items = (p.teams || []).slice(0, 4).map(team => {
           const labelClass = isEliminated(team) ? 'team-label eliminated' : 'team-label';
-          const clsClass = isClassified(team) ? 'classify-btn classified' : 'classify-btn';
-          return `<td><span class="${labelClass}" role="button" tabindex="0" data-team="${team}">${renderFlagTag(team)}</span><button class="${clsClass}" data-team="${team}" title="Clasificado R32">✓</button></td>`;
+          return `<td><span class="${labelClass}">${renderFlagTag(team)}</span></td>`;
         }).join('');
         return `
           <tr>
@@ -1573,9 +1529,8 @@
       if (cardsContainer) {
         cardsContainer.innerHTML = picks.map(p => {
           const teams = (p.teams || []).slice(0, 4).map(team => {
-            const clsClass = isClassified(team) ? 'classify-btn classified' : 'classify-btn';
-            const cardTeamClass = ['picks-card-team', isEliminated(team) ? 'eliminated' : '', isClassified(team) ? 'classified' : ''].filter(Boolean).join(' ');
-            return `<div class="${cardTeamClass}">${renderFlagTag(team)}<button class="${clsClass}" data-team="${team}" title="Clasificado R32">✓</button></div>`;
+            const cardTeamClass = isEliminated(team) ? 'picks-card-team eliminated' : 'picks-card-team';
+            return `<div class="${cardTeamClass}">${renderFlagTag(team)}</div>`;
           }).join('');
           return `
             <div class="picks-card">
@@ -1862,6 +1817,7 @@
         fetch('/api/bracket').then(r => r.json()),
       ]);
       window.currentStandings = standings;
+      computeAutoStatus(groups, bracket);
       renderPicks(picks);
       renderParticipantSummary();
       renderResults(results);
@@ -1887,8 +1843,6 @@
     }
 
     async function loadInitial() {
-      loadEliminated();
-      loadClassified();
       await loadData();
     }
 
@@ -1898,11 +1852,6 @@
       if (payload.type === 'init' || payload.type === 'update') {
         renderResults(payload.results || []);
         renderGroups(payload.groups || []);
-        // apply eliminated teams from backend if provided
-        if (payload.eliminatedTeams && Array.isArray(payload.eliminatedTeams)) {
-          payload.eliminatedTeams.forEach(t => eliminatedMap[t] = true);
-          saveEliminated();
-        }
         const currentPicks = window.currentPicks || [];
         renderParticipantChart(payload.standings || []);
         window.currentStandings = payload.standings || window.currentStandings || [];
@@ -1911,34 +1860,6 @@
       }
     });
 
-    // allow clicking on team names to toggle elimination (local UI state)
-    document.getElementById('picks').addEventListener('click', e => {
-      if (e.target.closest('.classify-btn')) return; // handled separately
-      const el = e.target.closest('.team-label');
-      if (!el) return;
-      toggleEliminated(el.dataset.team);
-    });
-
-    document.getElementById('picks').addEventListener('click', e => {
-      const btn = e.target.closest('.classify-btn');
-      if (!btn) return;
-      toggleClassified(btn.dataset.team);
-    });
-
-    document.getElementById('picks-cards').addEventListener('click', e => {
-      const btn = e.target.closest('.classify-btn');
-      if (!btn) return;
-      toggleClassified(btn.dataset.team);
-    });
-
-    document.getElementById('picks').addEventListener('keydown', e => {
-      const el = e.target.closest('.team-label');
-      if (!el) return;
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleEliminated(el.dataset.team);
-      }
-    });
 
     loadInitial();
     setInterval(triggerRefresh, 60000);
