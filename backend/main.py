@@ -220,22 +220,31 @@ GROUPS = list('ABCDEFGHIJKL')
 # Confirmados con la API: posiciones 0,2,3,6,8,9
 # W_X=ganador grupo X, R_X=subcampeón grupo X, T{n}=n-ésimo mejor 3ro
 R32_MATCHES = [
-    ('W_E', '3rd_D'), # 537415 Jun29: Alemania vs Paraguay ✓
-    ('W_H', 'R_J'),   # 537416 Jun30: España vs Austria ✓
-    ('R_A', 'R_B'),   # 537417 Jun28: Sudáfrica vs Canadá ✓
-    ('W_F', 'R_C'),   # 537418 Jun30: Países Bajos vs Marruecos ✓
-    ('R_K', 'R_L'),   # 537419 Jul02: Portugal vs Croacia ✓
-    ('W_G', '3rd_I'), # 537420 Jul02: Bélgica vs Senegal ✓
-    ('W_D', '3rd_B'), # 537421 Jul02: USA vs Bosnia ✓
-    ('W_K', '3rd_L'), # 537422 Jul01: Colombia vs Ghana ✓
-    ('W_C', 'R_F'),   # 537423 Jun29: Brasil vs Japón ✓
-    ('R_I', 'R_E'),   # 537424 Jun30: Noruega vs Costa de Marfil ✓
-    ('W_A', 'T1'),    # 537425 Jul01: México vs mejor 3ro restante
-    ('W_I', '3rd_F'), # 537426 Jul01: Francia vs Suecia ✓
-    ('W_J', 'R_H'),   # 537427 Jul03: Argentina vs Cabo Verde ✓
-    ('R_D', 'R_G'),   # 537428 Jul03: Australia vs Egipto ✓
-    ('W_B', 'T2'),    # 537429 Jul03: Suiza vs 2do mejor 3ro restante
-    ('W_L', '3rd_K'), # 537430 Jul04: Inglaterra vs R. Congo ✓
+    # Pares consecutivos → ganadores se enfrentan en R16
+    # R16-1: W(Sudáfrica/Canadá) vs W(Países Bajos/Marruecos)
+    ('R_A', 'R_B'),   # pos 0: Sudáfrica vs Canadá
+    ('W_F', 'R_C'),   # pos 1: Países Bajos vs Marruecos
+    # R16-2: W(Alemania/Paraguay) vs W(Francia/Suecia)
+    ('W_E', '3rd_D'), # pos 2: Alemania vs Paraguay
+    ('W_I', '3rd_F'), # pos 3: Francia vs Suecia
+    # R16-3: W(Bélgica/Senegal) vs W(EUA/Bosnia)
+    ('W_G', '3rd_I'), # pos 4: Bélgica vs Senegal
+    ('W_D', '3rd_B'), # pos 5: EUA vs Bosnia
+    # R16-4: W(España/Austria) vs W(Portugal/Croacia)
+    ('W_H', 'R_J'),   # pos 6: España vs Austria
+    ('R_K', 'R_L'),   # pos 7: Portugal vs Croacia
+    # R16-5: W(Brasil/Japón) vs W(Noruega/Costa de Marfil)
+    ('W_C', 'R_F'),   # pos 8: Brasil vs Japón
+    ('R_I', 'R_E'),   # pos 9: Noruega vs Costa de Marfil
+    # R16-6: W(México/Ecuador) vs W(Inglaterra/R. Congo)
+    ('W_A', 'T1'),    # pos 10: México vs Ecuador (T1)
+    ('W_L', '3rd_K'), # pos 11: Inglaterra vs R. Congo
+    # R16-7: W(Suiza/Argelia) vs W(Colombia/Ghana)
+    ('W_B', 'T2'),    # pos 12: Suiza vs Argelia (T2)
+    ('W_K', '3rd_L'), # pos 13: Colombia vs Ghana
+    # R16-8: W(Australia/Egipto) vs W(Argentina/Cabo Verde)
+    ('R_D', 'R_G'),   # pos 14: Australia vs Egipto
+    ('W_J', 'R_H'),   # pos 15: Argentina vs Cabo Verde
 ]
 
 
