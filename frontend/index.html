@@ -1817,6 +1817,8 @@
         fetch('/api/bracket').then(r => r.json()),
       ]);
       window.currentStandings = standings;
+      window.currentGroups = groups;
+      window.currentBracket = bracket;
       computeAutoStatus(groups, bracket);
       renderPicks(picks);
       renderParticipantSummary();
@@ -1851,10 +1853,14 @@
       const payload = JSON.parse(event.data);
       if (payload.type === 'init' || payload.type === 'update') {
         renderResults(payload.results || []);
-        renderGroups(payload.groups || []);
+        const wsGroups = payload.groups || window.currentGroups || [];
+        renderGroups(wsGroups);
+        if (payload.groups) window.currentGroups = payload.groups;
         const currentPicks = window.currentPicks || [];
         renderParticipantChart(payload.standings || []);
         window.currentStandings = payload.standings || window.currentStandings || [];
+        computeAutoStatus(wsGroups, window.currentBracket || {});
+        renderPicks(window.currentPicks || []);
         renderParticipantSummary();
         updateStats({ length: payload.picks_count || currentPicks.length }, payload.results || []);
       }
